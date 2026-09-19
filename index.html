@@ -1,0 +1,3168 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>广汽本田来客门店码查询</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: #f5f4f1;
+    color: #333;
+  }
+  .header {
+    background: #fff;
+    border-bottom: 1px solid #e8e6e2;
+    padding: 24px 32px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  }
+  .header-inner { max-width: 1300px; margin: 0 auto; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; }
+  .header-left { flex: 1; min-width: 300px; }
+  .header h1 { font-size: 22px; font-weight: 600; color: #222; margin-bottom: 4px; }
+  .header .hint { font-size: 13px; color: #999; margin-bottom: 2px; }
+  .header-right { display: flex; gap: 10px; align-items: center; }
+  .search-box {
+    margin-top: 14px;
+    display: flex; gap: 12px; align-items: center;
+  }
+  .search-box input {
+    flex: 1;
+    padding: 10px 16px;
+    border: 2px solid #e0ded9;
+    border-radius: 8px;
+    font-size: 15px;
+    outline: none;
+    transition: border-color 0.2s;
+    background: #fafaf8;
+  }
+  .search-box input:focus { border-color: #eb641e; }
+  .search-box .count { font-size: 14px; color: #888; white-space: nowrap; }
+  .search-box .count strong { color: #eb641e; }
+  .container { max-width: 1300px; margin: 24px auto; padding: 0 24px; }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+  }
+  .card {
+    background: #fff;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid #eee;
+    transition: box-shadow 0.2s, transform 0.15s;
+    display: flex; flex-direction: column;
+    position: relative;
+  }
+  .card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.1); transform: translateY(-2px); }
+  .card.custom { border-color: #eb641e; border-width: 1.5px; }
+  .card-badge {
+    position: absolute; top: 8px; right: 8px;
+    background: #eb641e; color: #fff;
+    font-size: 10px; padding: 2px 8px;
+    border-radius: 4px; z-index: 5;
+    display: none;
+  }
+  .card.custom .card-badge { display: block; }
+  .card-img {
+    background: #fafaf8;
+    display: flex;
+    align-items: center; justify-content: center;
+    padding: 20px; min-height: 180px;
+    cursor: pointer; position: relative;
+  }
+  .card-img img {
+    max-width: 140px; max-height: 140px;
+    display: block; transition: transform 0.2s;
+  }
+  .card-img:hover img { transform: scale(1.05); }
+  .card-body { padding: 12px 16px 16px; flex: 1; display: flex; flex-direction: column; gap: 8px; }
+  .card-name { font-size: 14px; font-weight: 600; color: #333; line-height: 1.4; }
+  .card-meta { display: flex; gap: 8px; flex-wrap: wrap; }
+  .tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 500;
+  }
+  .tag-code { background: #fff3eb; color: #eb641e; }
+  .tag-short { background: #f0f0f0; color: #666; }
+  .card-actions { display: flex; gap: 8px; margin-top: auto; }
+  .btn {
+    padding: 7px 16px;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+    border: none;
+    font-weight: 500;
+    transition: all 0.15s;
+    text-decoration: none;
+    display: inline-flex; align-items: center; gap: 4px;
+  }
+  .btn-download { background: #eb641e; color: #fff; flex: 1; justify-content: center; }
+  .btn-download:hover { background: #d45a1b; }
+  .btn-preview { background: #f5f4f1; color: #555; border: 1px solid #e0ded9; }
+  .btn-preview:hover { background: #ebebeb; }
+  .btn-login { background: #333; color: #fff; }
+  .btn-login:hover { background: #555; }
+  .btn-add { background: #eb641e; color: #fff; }
+  .btn-add:hover { background: #d45a1b; }
+  .btn-logout { background: #f5f4f1; color: #555; border: 1px solid #e0ded9; }
+  .btn-logout:hover { background: #ebebeb; }
+  .btn-delete { background: #ff4444; color: #fff; font-size: 12px; padding: 4px 10px; }
+  .btn-delete:hover { background: #cc3333; }
+  .btn-edit { background: #f0f0f0; color: #555; font-size: 12px; padding: 4px 10px; border: 1px solid #e0ded9; cursor: pointer; border-radius: 6px; font-weight: 500; }
+  .btn-edit:hover { background: #e0ded9; }
+  .btn-save { background: #eb641e; color: #fff; }
+  .btn-save:hover { background: #d45a1b; }
+  .btn-cancel { background: #f5f4f1; color: #555; border: 1px solid #e0ded9; }
+  .btn-cancel:hover { background: #ebebeb; }
+  .btn-batch { background: #333; color: #fff; }
+  .btn-batch:hover { background: #555; }
+  .btn-batch.active { background: #eb641e; }
+  .btn-batch-delete { background: #ff4444; color: #fff; }
+  .btn-batch-delete:hover { background: #cc3333; }
+  .batch-bar {
+    display: none;
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: #fff; border-top: 2px solid #eb641e;
+    padding: 14px 24px; z-index: 200;
+    box-shadow: 0 -4px 16px rgba(0,0,0,0.1);
+    justify-content: center; align-items: center; gap: 16px;
+  }
+  .batch-bar.active { display: flex; }
+  .batch-bar .bar-info { font-size: 14px; color: #555; }
+  .batch-bar .bar-info strong { color: #eb641e; }
+  .card-checkbox {
+    display: none;
+    position: absolute; top: 8px; left: 8px;
+    width: 22px; height: 22px;
+    z-index: 6; cursor: pointer;
+    accent-color: #eb641e;
+  }
+  .card.batch-mode .card-checkbox { display: block; }
+  .card.batch-selected { border-color: #eb641e; border-width: 2px; box-shadow: 0 2px 12px rgba(235,100,30,0.2); }
+  .card.batch-mode .card-img { cursor: default; }
+  .card.batch-mode .card-actions { display: none; }
+  .deleted-banner {
+    display: none;
+    background: #fff3eb; border: 1px solid #eb641e;
+    border-radius: 8px; padding: 10px 16px; margin-bottom: 16px;
+    font-size: 13px; color: #b85518; align-items: center; gap: 8px;
+  }
+  .deleted-banner.active { display: flex; }
+  .deleted-banner .btn-restore { margin-left: auto; background: #eb641e; color: #fff; border: none; padding: 5px 14px; border-radius: 6px; cursor: pointer; font-size: 12px; }
+  .empty { text-align: center; padding: 80px 20px; color: #999; }
+  .empty .icon { font-size: 48px; margin-bottom: 12px; }
+  .empty p { font-size: 15px; }
+
+  .modal { display: none; position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.75); z-index:999; align-items: center; justify-content: center; }
+  .modal.active { display: flex; }
+  .modal-content { background: #fff; border-radius: 12px; padding: 32px; max-width: 480px; width: 90%; text-align: center; position: relative; }
+  .modal-close { position: absolute; top:12px; right:16px; background:none; border:none; font-size:28px; cursor:pointer; color:#aaa; line-height:1; }
+  .modal-close:hover { color:#333; }
+  .modal img { max-width: 280px; margin: 12px 0 20px; }
+  .modal .modal-name { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+  .modal .modal-meta { font-size: 13px; color: #888; margin-bottom: 16px; }
+
+  /* Login modal */
+  .login-modal .modal-content { max-width: 380px; padding: 36px 32px; }
+  .login-modal h2 { font-size: 20px; font-weight: 600; margin-bottom: 24px; color: #222; }
+  .login-modal .form-group { margin-bottom: 16px; text-align: left; }
+  .login-modal label { display: block; font-size: 13px; color: #666; margin-bottom: 6px; font-weight: 500; }
+  .login-modal input {
+    width: 100%; padding: 10px 14px; border: 2px solid #e0ded9;
+    border-radius: 8px; font-size: 15px; outline: none;
+    transition: border-color 0.2s; background: #fafaf8;
+  }
+  .login-modal input:focus { border-color: #eb641e; }
+  .login-modal .login-error { color: #e74c3c; font-size: 13px; margin-top: 8px; display: none; }
+  .login-modal .btn-login { width: 100%; justify-content: center; padding: 10px; margin-top: 8px; }
+
+  /* Add modal */
+  .add-modal .modal-content { max-width: 460px; padding: 36px 32px; text-align: left; }
+  .add-modal h2 { font-size: 20px; font-weight: 600; margin-bottom: 20px; color: #222; text-align: center; }
+  .add-modal .form-group { margin-bottom: 16px; }
+  .add-modal label { display: block; font-size: 13px; color: #666; margin-bottom: 6px; font-weight: 500; }
+  .add-modal label .req { color: #e74c3c; }
+  .add-modal input[type=text] {
+    width: 100%; padding: 10px 14px; border: 2px solid #e0ded9;
+    border-radius: 8px; font-size: 14px; outline: none;
+    transition: border-color 0.2s; background: #fafaf8;
+  }
+  .add-modal input[type=text]:focus { border-color: #eb641e; }
+  .upload-area {
+    border: 2px dashed #d0cec9; border-radius: 8px;
+    padding: 24px; text-align: center; cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+    background: #fafaf8; position: relative;
+  }
+  .upload-area:hover { border-color: #eb641e; background: #fff8f3; }
+  .upload-area.dragover { border-color: #eb641e; background: #fff3eb; }
+  .upload-area .upload-icon { font-size: 36px; margin-bottom: 8px; }
+  .upload-area .upload-text { font-size: 14px; color: #888; }
+  .upload-area .upload-hint { font-size: 12px; color: #bbb; margin-top: 4px; }
+  .upload-preview { display: none; margin-top: 12px; text-align: center; }
+  .upload-preview img { max-width: 160px; max-height: 160px; border-radius: 8px; border: 1px solid #eee; }
+  .upload-preview .preview-label { font-size: 12px; color: #999; margin-top: 6px; }
+  .add-modal .btn-row { display: flex; gap: 12px; margin-top: 8px; }
+  .add-modal .btn-row .btn { flex: 1; justify-content: center; padding: 10px; }
+  .add-modal .add-error { color: #e74c3c; font-size: 13px; margin-top: 8px; display: none; text-align: center; }
+
+  /* Edit modal */
+  .edit-modal .modal-content { max-width: 420px; padding: 36px 32px; text-align: left; }
+  .edit-modal h2 { font-size: 20px; font-weight: 600; margin-bottom: 16px; color: #222; text-align: center; }
+  .edit-modal .form-group { margin-bottom: 14px; }
+  .edit-modal label { display: block; font-size: 13px; color: #666; margin-bottom: 6px; font-weight: 500; }
+  .edit-modal input[type=text] {
+    width: 100%; padding: 10px 14px; border: 2px solid #e0ded9;
+    border-radius: 8px; font-size: 14px; outline: none;
+    transition: border-color 0.2s; background: #fafaf8;
+  }
+  .edit-modal input[type=text]:focus { border-color: #eb641e; }
+  .edit-modal .btn-row { display: flex; gap: 12px; margin-top: 8px; }
+  .edit-modal .btn-row .btn { flex: 1; justify-content: center; padding: 10px; }
+
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <div class="header-left">
+      <h1>广汽本田 来客门店码查询</h1>
+      <p class="hint">支持搜索：门店名称 / 店代码 / 店简称，如 志诚、DGD036、潮州</p>
+      <div class="search-box">
+        <input type="text" id="search" placeholder="输入门店名称、店代码或店简称搜索……" autofocus>
+        <span class="count">共 <strong id="total">0</strong> 家门店</span>
+      </div>
+    </div>
+    <div class="header-right" id="headerRight">
+      <button class="btn btn-login" id="loginBtn" onclick="openLogin()">管理登录</button>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="deleted-banner" id="deletedBanner">
+    <span id="deletedInfo"></span>
+    <button class="btn-restore" onclick="restoreAll()">恢复全部已删门店</button>
+  </div>
+  <div class="grid" id="grid"></div>
+  <div class="empty" id="empty" style="display:none">
+    <div class="icon">🔍</div>
+    <p>未找到匹配的门店，试试其他关键词</p>
+  </div>
+</div>
+
+<!-- Batch action bar -->
+<div class="batch-bar" id="batchBar">
+  <span class="bar-info">已选 <strong id="selCount">0</strong> 家门店</span>
+  <button class="btn btn-batch-delete" onclick="batchDelete()">删除选中</button>
+  <button class="btn btn-cancel" onclick="exitBatchMode()">取消</button>
+</div>
+
+<!-- Preview Modal -->
+<div class="modal" id="modal">
+  <div class="modal-content">
+    <button class="modal-close" onclick="closeModal()">&times;</button>
+    <div class="modal-name" id="modalName"></div>
+    <div class="modal-meta" id="modalMeta"></div>
+    <img id="modalImg" src="" alt="">
+    <div>
+      <a class="btn btn-download" id="modalDownload" href="#" download>下载二维码</a>
+    </div>
+  </div>
+</div>
+
+<!-- Login Modal -->
+<div class="modal login-modal" id="loginModal">
+  <div class="modal-content">
+    <button class="modal-close" onclick="closeLogin()">&times;</button>
+    <h2>管理登录</h2>
+    <div class="form-group">
+      <label>账号</label>
+      <input type="text" id="loginUser" placeholder="请输入账号" autocomplete="off">
+    </div>
+    <div class="form-group">
+      <label>密码</label>
+      <input type="password" id="loginPass" placeholder="请输入密码" autocomplete="off">
+    </div>
+    <div class="login-error" id="loginError">账号或密码错误，请重试</div>
+    <button class="btn btn-login" onclick="doLogin()">登录</button>
+  </div>
+</div>
+
+<!-- Add Store Modal -->
+<div class="modal add-modal" id="addModal">
+  <div class="modal-content">
+    <button class="modal-close" onclick="closeAdd()">&times;</button>
+    <h2>添加门店码</h2>
+    <div class="form-group">
+      <label>门店二维码图片 <span class="req">*</span></label>
+      <div class="upload-area" id="uploadArea" onclick="document.getElementById('fileInput').click()">
+        <div class="upload-icon">📤</div>
+        <div class="upload-text">点击或拖拽图片到此处上传</div>
+        <div class="upload-hint">支持 PNG / JPG / JPEG 格式</div>
+      </div>
+      <input type="file" id="fileInput" accept="image/png,image/jpeg" style="display:none" onchange="handleFile(this.files[0])">
+      <div class="upload-preview" id="uploadPreview">
+        <img id="previewImg" src="" alt="">
+        <div class="preview-label" id="previewLabel"></div>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>来客名称 <span class="req">*</span></label>
+      <input type="text" id="addName" placeholder="如：广汽本田xxx特约店">
+    </div>
+    <div class="form-group">
+      <label>店代码</label>
+      <input type="text" id="addCode" placeholder="如：DGD036（选填）">
+    </div>
+    <div class="form-group">
+      <label>店简称</label>
+      <input type="text" id="addShort" placeholder="如：潮州志诚店（选填）">
+    </div>
+    <div class="add-error" id="addError"></div>
+    <div class="btn-row">
+      <button class="btn btn-cancel" onclick="closeAdd()">取消</button>
+      <button class="btn btn-save" onclick="saveStore()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Store Modal -->
+<div class="modal edit-modal" id="editModal">
+  <div class="modal-content">
+    <button class="modal-close" onclick="closeEdit()">&times;</button>
+    <h2>编辑门店信息</h2>
+    <p id="editStoreName" style="font-size:15px;color:#333;margin-bottom:18px;text-align:center;"></p>
+    <div class="form-group">
+      <label>店代码</label>
+      <input type="text" id="editCode" placeholder="如：DGD036">
+    </div>
+    <div class="form-group">
+      <label>店简称</label>
+      <input type="text" id="editShort" placeholder="如：潮州志诚店">
+    </div>
+    <div class="add-error" id="editError"></div>
+    <div class="btn-row">
+      <button class="btn btn-cancel" onclick="closeEdit()">取消</button>
+      <button class="btn btn-save" onclick="doEdit()">保存</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// Detect if running on local management server
+var isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+
+let stores = [
+  {
+    "file": "6601129918795352078_广汽本田北部湾店_台卡_7655161417621373739.png",
+    "name": "广汽本田北部湾店",
+    "code": "DGX008",
+    "short": "北海北部湾店"
+  },
+  {
+    "file": "6601130246211110916_广汽本田(北环店)_台卡_7655161417621357355.png",
+    "name": "广汽本田(北环店)",
+    "code": "DHEN46",
+    "short": "郑州北环店"
+  },
+  {
+    "file": "6601132083031050244_广汽本田隆顺店_台卡_7655161417621340971.png",
+    "name": "广汽本田隆顺店",
+    "code": "DSD042",
+    "short": "高密隆顺店"
+  },
+  {
+    "file": "6601134274689107981_广汽本田宏大店_台卡_7655161417621291819.png",
+    "name": "广汽本田宏大店",
+    "code": "DLN002",
+    "short": "沈阳宏大店"
+  },
+  {
+    "file": "6601135269250861063_广汽本田百翔店_台卡_7655161417621275435.png",
+    "name": "广汽本田百翔店",
+    "code": "DSC011",
+    "short": "成都百翔店"
+  },
+  {
+    "file": "6601135607932536840_广汽本田高田店_台卡_7655161417621259051.png",
+    "name": "广汽本田高田店",
+    "code": "DJS038",
+    "short": "南京高田店"
+  },
+  {
+    "file": "6601136030173104132_广汽本田顺吉店_台卡_7655161417621242667.png",
+    "name": "广汽本田顺吉店",
+    "code": "DSD011",
+    "short": "东营顺吉店"
+  },
+  {
+    "file": "6601136244468484103_广汽本田和鑫店_台卡_7655161417621226283.png",
+    "name": "广汽本田和鑫店",
+    "code": "DLN019",
+    "short": "鞍山和鑫店"
+  },
+  {
+    "file": "6601136713001601028_广汽本田(番禺广诚店)_台卡_7655161417621209899.png",
+    "name": "广汽本田(番禺广诚店)",
+    "code": "DGD082",
+    "short": "广州广诚店"
+  },
+  {
+    "file": "6601137174089828356_广汽本田恒龙店_台卡_7655161417621193515.png",
+    "name": "广汽本田恒龙店",
+    "code": "DHUB11",
+    "short": "恩施恒龙店"
+  },
+  {
+    "file": "6601137343657166861_广汽本田天顺达店_台卡_7655161417621177131.png",
+    "name": "广汽本田天顺达店",
+    "code": "DHUB07",
+    "short": "荆州天顺达店"
+  },
+  {
+    "file": "6601137394622138375_广汽本田宝盛店_台卡_7655161417621160747.png",
+    "name": "广汽本田宝盛店",
+    "code": "DHUN09",
+    "short": "湘潭宝盛店"
+  },
+  {
+    "file": "6601137432182130701_广汽本田佳浩店_台卡_7655161417621144363.png",
+    "name": "广汽本田佳浩店",
+    "code": "DHEB07",
+    "short": "沧州佳浩店"
+  },
+  {
+    "file": "6601137552726427662_广汽本田鸿润店_台卡_7655161417621127979.png",
+    "name": "广汽本田鸿润店",
+    "code": "DSD018",
+    "short": "济南鸿润店"
+  },
+  {
+    "file": "6601137583953020935_广汽本田信安(张家港店)_台卡_7655161417621111595.png",
+    "name": "广汽本田信安(张家港店)",
+    "code": "DJS018",
+    "short": "张家港信安店"
+  },
+  {
+    "file": "6601138002263558152_广汽本田邯海店_台卡_7655161417621095211.png",
+    "name": "广汽本田邯海店",
+    "code": "DQH001",
+    "short": "西宁邯海店"
+  },
+  {
+    "file": "6601138133880801294_广汽本田东圃店_台卡_7655161417621078827.png",
+    "name": "广汽本田东圃店",
+    "code": "DGD119",
+    "short": "广州东圃店"
+  },
+  {
+    "file": "6601138262868232196_广汽本田九城店_台卡_7655161417621062443.png",
+    "name": "广汽本田九城店",
+    "code": "DHUN25",
+    "short": "长沙九城店"
+  },
+  {
+    "file": "6601138358875867149_广汽本田盛达店_台卡_7655161417621046059.png",
+    "name": "广汽本田盛达店",
+    "code": "DJS008",
+    "short": "江阴盛达店"
+  },
+  {
+    "file": "6601138798753482760_广汽本田银光店_台卡_7655161417621029675.png",
+    "name": "广汽本田银光店",
+    "code": "DSXW01",
+    "short": "西安银光店"
+  },
+  {
+    "file": "6601138944895617031_广汽本田欣雅特店_台卡_7655161417621013291.png",
+    "name": "广汽本田欣雅特店",
+    "code": "DSXE18",
+    "short": "长治欣雅特店"
+  },
+  {
+    "file": "6601139090161158152_广汽本田恒信店_台卡_7655161417620980523.png",
+    "name": "广汽本田恒信店",
+    "code": "DGD046",
+    "short": "东莞恒信店"
+  },
+  {
+    "file": "6601139292834105347_广汽本田德元店_台卡_7655161417620964139.png",
+    "name": "广汽本田德元店",
+    "code": "DHUN12",
+    "short": "怀化德元店"
+  },
+  {
+    "file": "6601139296718030862_广汽本田东莞石排店_台卡_7655161417620947755.png",
+    "name": "广汽本田东莞石排店",
+    "code": "DGD046S001",
+    "short": "广汽本田恒信店石排分店"
+  },
+  {
+    "file": "6601139355773831175_广汽本田五田店_台卡_7655161417620931371.png",
+    "name": "广汽本田五田店",
+    "code": "DZJ040",
+    "short": "苍南五田店"
+  },
+  {
+    "file": "6601139777263634440_广汽本田雨田店_台卡_7655161417620865835.png",
+    "name": "广汽本田雨田店",
+    "code": "DJS001",
+    "short": "南京雨田店"
+  },
+  {
+    "file": "6601139850684942344_广汽本田华顺(星沙店)_台卡_7655161417620833067.png",
+    "name": "广汽本田华顺(星沙店)",
+    "code": "DHUN11",
+    "short": "长沙华顺店"
+  },
+  {
+    "file": "6601139915017160712_广汽本田瑞冠店_台卡_7655161417620816683.png",
+    "name": "广汽本田瑞冠店",
+    "code": "DSD051",
+    "short": "青岛瑞冠店"
+  },
+  {
+    "file": "6601139941948786691_广汽本田安信店_台卡_7655161417620783915.png",
+    "name": "广汽本田安信店",
+    "code": "DGD064",
+    "short": "深圳安信店"
+  },
+  {
+    "file": "6601139946080176142_广汽本田(凯润东成店)_台卡_7655161417620767531.png",
+    "name": "广汽本田(凯润东成店)",
+    "code": "DGD061",
+    "short": "东莞凯润东成店"
+  },
+  {
+    "file": "6601140195620292615_广汽本田吉田店_台卡_7655161417620734763.png",
+    "name": "广汽本田吉田店",
+    "code": "DJS021",
+    "short": "盐城吉田店"
+  },
+  {
+    "file": "6601140317963945992_广汽本田莆田九牧店_台卡_7655161417620718379.png",
+    "name": "广汽本田莆田九牧店",
+    "code": "DFJ007",
+    "short": "莆田九牧店"
+  },
+  {
+    "file": "6601140555864868878_广汽本田长盛店_台卡_7655161417617474340.png",
+    "name": "广汽本田长盛店",
+    "code": "DGD065",
+    "short": "广州长盛店"
+  },
+  {
+    "file": "6601140605865166855_广汽本田古田店_台卡_7655161417617441572.png",
+    "name": "广汽本田古田店",
+    "code": "DZJ018",
+    "short": "杭州古田店"
+  },
+  {
+    "file": "6601140700685797380_广汽本田哈尔滨长青店_台卡_7655161417617408804.png",
+    "name": "广汽本田哈尔滨长青店",
+    "code": "DHLJ14",
+    "short": "哈尔滨长青博实店"
+  },
+  {
+    "file": "6601140736706496525_广汽本田冠华店_台卡_7655161417617392420.png",
+    "name": "广汽本田冠华店",
+    "code": "DGD008",
+    "short": "江门冠华店"
+  },
+  {
+    "file": "6601140806067685380_广汽本田恒兴店_台卡_7655161417617376036.png",
+    "name": "广汽本田恒兴店",
+    "code": "DGD075",
+    "short": "佛山恒兴店"
+  },
+  {
+    "file": "6601141020459534339_广汽本田本旺店_台卡_7655161417617359652.png",
+    "name": "广汽本田本旺店",
+    "code": "DJS010",
+    "short": "苏州本旺店"
+  },
+  {
+    "file": "6601141153314113549_广汽本田(俊诚店)_台卡_7655161417617343268.png",
+    "name": "广汽本田(俊诚店)",
+    "code": "DJS024",
+    "short": "南通俊诚店"
+  },
+  {
+    "file": "6601141167163705357_广汽本田梅州店_台卡_7655161417617326884.png",
+    "name": "广汽本田梅州店",
+    "code": "DGD029",
+    "short": "广本梅州店"
+  },
+  {
+    "file": "6601141221106649091_广汽本田冠豪店_台卡_7655161417617310500.png",
+    "name": "广汽本田冠豪店",
+    "code": "DZJ049",
+    "short": "瑞安冠豪店"
+  },
+  {
+    "file": "6601141222201362439_广汽本田莞樟店塘厦分店_台卡_7655161417617294116.png",
+    "name": "广汽本田莞樟店塘厦分店",
+    "code": "DGD052S001",
+    "short": "广汽本田莞樟店塘厦分店"
+  },
+  {
+    "file": "6601141282909734915_广汽本田(友芝友店)_台卡_7655161417617277732.png",
+    "name": "广汽本田(友芝友店)",
+    "code": "DHUB02",
+    "short": "武汉友芝友店"
+  },
+  {
+    "file": "6601141351167821828_广汽本田(车友店)_台卡_7655161417617261348.png",
+    "name": "广汽本田(车友店)",
+    "code": "DGD116",
+    "short": "惠州车友店"
+  },
+  {
+    "file": "6601141369488558083_广汽本田(茂名锦伦店)_台卡_7655161417617244964.png",
+    "name": "广汽本田(茂名锦伦店)",
+    "code": "DGD024",
+    "short": "茂名锦伦店"
+  },
+  {
+    "file": "6601141389436651528_广汽本田东鑫店_台卡_7655161417617228580.png",
+    "name": "广汽本田东鑫店",
+    "code": "DJS013",
+    "short": "无锡东鑫店"
+  },
+  {
+    "file": "6601141405773465607_广汽本田路安店_台卡_7655161417617212196.png",
+    "name": "广汽本田路安店",
+    "code": "DLN001",
+    "short": "沈阳路安店"
+  },
+  {
+    "file": "6601141429328693256_广汽本田金沙鄂东店_台卡_7655161417617195812.png",
+    "name": "广汽本田金沙鄂东店",
+    "code": "DHUB14",
+    "short": "黄冈金沙鄂东店"
+  },
+  {
+    "file": "6601141671650396164_广汽本田鸿粤田(白云店)_台卡_7655161417617163044.png",
+    "name": "广汽本田鸿粤田(白云店)",
+    "code": "DGD062",
+    "short": "广州鸿粤田店"
+  },
+  {
+    "file": "6601141763916695560_广汽本田七星店_台卡_7655161417617130276.png",
+    "name": "广汽本田七星店",
+    "code": "DSC015",
+    "short": "宜宾七星店"
+  },
+  {
+    "file": "6601141903196948487_广汽本田汇骏店_台卡_7655161417617097508.png",
+    "name": "广汽本田汇骏店",
+    "code": "DGD045",
+    "short": "广州汇骏店"
+  },
+  {
+    "file": "6601141915725334541_广汽本田恒信致远店_台卡_7655161417617081124.png",
+    "name": "广汽本田恒信致远店",
+    "code": "DHUB19",
+    "short": "宜昌恒信致远店"
+  },
+  {
+    "file": "6601141980745435144_广汽本田黄河店_台卡_7655161417617048356.png",
+    "name": "广汽本田黄河店",
+    "code": "DSXE16",
+    "short": "太原黄河店"
+  },
+  {
+    "file": "6601142068737755143_广汽本田金美店_台卡_7655161417617031972.png",
+    "name": "广汽本田金美店",
+    "code": "DGD030",
+    "short": "东莞金美店"
+  },
+  {
+    "file": "6601142290746443783_广汽本田新站店_台卡_7655161417617015588.png",
+    "name": "广汽本田新站店",
+    "code": "DAH025",
+    "short": "合肥新站店"
+  },
+  {
+    "file": "6601142515494029319_广汽本田景田店_台卡_7655161417616999204.png",
+    "name": "广汽本田景田店",
+    "code": "DHUB04",
+    "short": "武汉景田店"
+  },
+  {
+    "file": "6601142534485837832_广汽本田邑兴店_台卡_7655161417616982820.png",
+    "name": "广汽本田邑兴店",
+    "code": "DGD072",
+    "short": "开平邑兴店"
+  },
+  {
+    "file": "6601142747258685447_广汽本田益友店_台卡_7655161417616966436.png",
+    "name": "广汽本田益友店",
+    "code": "DNMG02",
+    "short": "包头益友店"
+  },
+  {
+    "file": "6601142762630809607_广汽本田鹏华店_台卡_7655161417616950052.png",
+    "name": "广汽本田鹏华店",
+    "code": "DLN009",
+    "short": "辽宁鹏华店"
+  },
+  {
+    "file": "6601142928205154307_广汽本田宇田店_台卡_7655161417616900900.png",
+    "name": "广汽本田宇田店",
+    "code": "DHUB17",
+    "short": "孝感宇田店"
+  },
+  {
+    "file": "6601143002566002695_广汽本田贵和店_台卡_7655161417616884516.png",
+    "name": "广汽本田贵和店",
+    "code": "DGZ015",
+    "short": "贵阳贵和店"
+  },
+  {
+    "file": "6601143030533589005_广汽本田华健店_台卡_7655161417616868132.png",
+    "name": "广汽本田华健店",
+    "code": "DJX005",
+    "short": "萍乡华健店"
+  },
+  {
+    "file": "6601143034132301831_广汽本田盛阳店_台卡_7655161417616851748.png",
+    "name": "广汽本田盛阳店",
+    "code": "DHEB34",
+    "short": "高碑店盛阳店"
+  },
+  {
+    "file": "6601143059512035335_广汽本田锦昌店_台卡_7655161417616835364.png",
+    "name": "广汽本田锦昌店",
+    "code": "DHEN27S001",
+    "short": "广汽本田锦上店开封分店"
+  },
+  {
+    "file": "6601143116030281731_广汽本田广福店德宏分店_台卡_7655161417616818980.png",
+    "name": "广汽本田广福店德宏分店",
+    "code": "DYN004S001",
+    "short": "广汽本田广福浩伟店德宏分店"
+  },
+  {
+    "file": "6601143222334949384_广汽本田合信店_台卡_7655161417616802596.png",
+    "name": "广汽本田合信店",
+    "code": "DJX011",
+    "short": "抚州合信店"
+  },
+  {
+    "file": "6601143352953931779_广汽本田星河店_台卡_7655161417616786212.png",
+    "name": "广汽本田星河店",
+    "code": "DLN010",
+    "short": "盘锦星河店"
+  },
+  {
+    "file": "6601143404476778500_广汽本田天驰店_台卡_7655161417616769828.png",
+    "name": "广汽本田天驰店",
+    "code": "DHUN14",
+    "short": "吉首天驰店"
+  },
+  {
+    "file": "6601143441172727815_广汽本田红山店_台卡_7655161417616753444.png",
+    "name": "广汽本田红山店",
+    "code": "DNMG05",
+    "short": "赤峰红山店"
+  },
+  {
+    "file": "6601143451213891592_广汽本田聚源店_台卡_7655161417616737060.png",
+    "name": "广汽本田聚源店",
+    "code": "DGD055",
+    "short": "揭阳聚源店"
+  },
+  {
+    "file": "6601143456196724744_广汽本田兴业店_台卡_7655161417616720676.png",
+    "name": "广汽本田兴业店",
+    "code": "DGD043",
+    "short": "深圳兴业店"
+  },
+  {
+    "file": "6601143648623003661_广汽本田长昕店_台卡_7655161417616704292.png",
+    "name": "广汽本田长昕店",
+    "code": "DGD059",
+    "short": "从化长昕店"
+  },
+  {
+    "file": "6601143922783700999_广汽本田金汇店_台卡_7655161417616671524.png",
+    "name": "广汽本田金汇店",
+    "code": "DGD086",
+    "short": "东莞金汇店"
+  },
+  {
+    "file": "6601144025514788877_广汽本田天中店_台卡_7655161417616655140.png",
+    "name": "广汽本田天中店",
+    "code": "DHEN19",
+    "short": "驻马店天中店"
+  },
+  {
+    "file": "6601144121690163214_广汽本田和骏店_台卡_7655161417616605988.png",
+    "name": "广汽本田和骏店",
+    "code": "DGZ003",
+    "short": "遵义和骏店"
+  },
+  {
+    "file": "6601144137548843011_广汽本田华兴店_台卡_7655161417616589604.png",
+    "name": "广汽本田华兴店",
+    "code": "DLN007",
+    "short": "辽阳华兴店"
+  },
+  {
+    "file": "6601144159866718216_广汽本田兴河店_台卡_7655161417616573220.png",
+    "name": "广汽本田兴河店",
+    "code": "DSXE11",
+    "short": "太原兴河店"
+  },
+  {
+    "file": "6601144332554618894_广汽本田顺德店_台卡_7655161417616540452.png",
+    "name": "广汽本田顺德店",
+    "code": "DGD002",
+    "short": "佛山顺德店"
+  },
+  {
+    "file": "6601144591485765636_广汽本田华昌店_台卡_7655161417616524068.png",
+    "name": "广汽本田华昌店",
+    "code": "DGX001",
+    "short": "南宁华昌店"
+  },
+  {
+    "file": "6601144667838875651_广汽本田子余博盛店_台卡_7655161417616491300.png",
+    "name": "广汽本田子余博盛店",
+    "code": "DJL016",
+    "short": "松原子余博盛店"
+  },
+  {
+    "file": "6601144784205645837_广汽本田广和店_台卡_7655161417616458532.png",
+    "name": "广汽本田广和店",
+    "code": "DZJ029",
+    "short": "杭州广和店"
+  },
+  {
+    "file": "6601144796469790728_广汽本田莞樟店_台卡_7655161417616442148.png",
+    "name": "广汽本田莞樟店",
+    "code": "DGD052",
+    "short": "东莞莞樟店"
+  },
+  {
+    "file": "6601144816875079687_广汽本田湘中店_台卡_7655161417616425764.png",
+    "name": "广汽本田湘中店",
+    "code": "DHUN13",
+    "short": "娄底湘中店"
+  },
+  {
+    "file": "6601144962270627844_广汽本田北斗店_台卡_7655161417616392996.png",
+    "name": "广汽本田北斗店",
+    "code": "DSD013",
+    "short": "聊城北斗店"
+  },
+  {
+    "file": "6601145165845366787_广汽本田金华店_台卡_7655161417616376612.png",
+    "name": "广汽本田金华店",
+    "code": "DZJ003",
+    "short": "金华金田店"
+  },
+  {
+    "file": "6601145402286671879_广汽本田合荣店_台卡_7655161417616360228.png",
+    "name": "广汽本田合荣店",
+    "code": "DGD112",
+    "short": "汕头合荣店"
+  },
+  {
+    "file": "6601145433202886659_广汽本田骏达店_台卡_7655161417616343844.png",
+    "name": "广汽本田骏达店",
+    "code": "DZJ002",
+    "short": "宁波骏达店"
+  },
+  {
+    "file": "6601145485153536014_广汽本田信田店_台卡_7655161417616327460.png",
+    "name": "广汽本田信田店",
+    "code": "DFJ006",
+    "short": "福州信田店"
+  },
+  {
+    "file": "6601145535661344781_广汽本田红翔店_台卡_7655161417616311076.png",
+    "name": "广汽本田红翔店",
+    "code": "DZJ041",
+    "short": "温州红翔店"
+  },
+  {
+    "file": "6601145624064690183_广汽本田顺成店_台卡_7655161417616294692.png",
+    "name": "广汽本田顺成店",
+    "code": "DGX002",
+    "short": "桂林顺成店"
+  },
+  {
+    "file": "6601145634386872333_广汽本田金时店_台卡_7655161417616278308.png",
+    "name": "广汽本田金时店",
+    "code": "DHEB11",
+    "short": "承德金时店"
+  },
+  {
+    "file": "6601145639113852942_广汽本田锦上店_台卡_7655161417616261924.png",
+    "name": "广汽本田锦上店",
+    "code": "DHEN27",
+    "short": "郑州锦上店"
+  },
+  {
+    "file": "6601145797608212484_广汽本田银新隆店_台卡_7655161417616229156.png",
+    "name": "广汽本田银新隆店",
+    "code": "DSXE24",
+    "short": "大同银新隆店"
+  },
+  {
+    "file": "6601146022938806279_广汽本田锦仓店_台卡_7655161417616212772.png",
+    "name": "广汽本田锦仓店",
+    "code": "DSH003",
+    "short": "上海广汽锦仓店"
+  },
+  {
+    "file": "6601146793759606798_广汽本田(溢田店)_台卡_7655161417616180004.png",
+    "name": "广汽本田(溢田店)",
+    "code": "DGD038",
+    "short": "阳江溢田店"
+  },
+  {
+    "file": "6601147012647749639_广汽本田(大岭山分店)_台卡_7655161417616163620.png",
+    "name": "广汽本田(大岭山分店)",
+    "code": "DGD006S001",
+    "short": "广汽本田聚成店大岭山分店"
+  },
+  {
+    "file": "6601147195989166087_广汽本田张家口金时胜利路店_台卡_7655161417616147236.png",
+    "name": "广汽本田张家口金时胜利路店",
+    "code": "DHEB32",
+    "short": "张家口金时胜利路店"
+  },
+  {
+    "file": "6601147320807458829_广汽本田骏鸣店_台卡_7655161417616130852.png",
+    "name": "广汽本田骏鸣店",
+    "code": "DGD020",
+    "short": "增城骏鸣店"
+  },
+  {
+    "file": "6601148118652160003_广汽本田万路店_台卡_7655161417616114468.png",
+    "name": "广汽本田万路店",
+    "code": "DNMG08",
+    "short": "通辽万路店"
+  },
+  {
+    "file": "6601148238735083533_广汽本田铭益店_台卡_7655161417616081700.png",
+    "name": "广汽本田铭益店",
+    "code": "DHUN26",
+    "short": "永州铭益店"
+  },
+  {
+    "file": "6601148457505802243_广汽本田恒福店_台卡_7655161417616065316.png",
+    "name": "广汽本田恒福店",
+    "code": "DGD049",
+    "short": "广州恒福店"
+  },
+  {
+    "file": "6601148466334812164_广汽本田立达店_台卡_7655161417616048932.png",
+    "name": "广汽本田立达店",
+    "code": "DLN008",
+    "short": "葫芦岛立达店"
+  },
+  {
+    "file": "6601149007991408653_广汽本田方锐店_台卡_7655161417616032548.png",
+    "name": "广汽本田方锐店",
+    "code": "DSD046",
+    "short": "滨州方锐店"
+  },
+  {
+    "file": "6601149368026302467_广汽本田盛博店_台卡_7655161417616016164.png",
+    "name": "广汽本田盛博店",
+    "code": "DSXE04",
+    "short": "临汾盛博店"
+  },
+  {
+    "file": "6601149537530677262_广汽本田远达店_台卡_7655161417615999780.png",
+    "name": "广汽本田远达店",
+    "code": "DGD028",
+    "short": "韶关远达店"
+  },
+  {
+    "file": "6601149569931675662_广汽本田(广福店)_台卡_7655161417615983396.png",
+    "name": "广汽本田(广福店)",
+    "code": "DYN004",
+    "short": "昆明广福浩伟店"
+  },
+  {
+    "file": "6601149587359008782_广汽本田华瑞店_台卡_7655161417615967012.png",
+    "name": "广汽本田华瑞店",
+    "code": "DHUB27",
+    "short": "襄阳华瑞店"
+  },
+  {
+    "file": "6601150291427461127_广汽本田国忠店_台卡_7655161417615934244.png",
+    "name": "广汽本田国忠店",
+    "code": "DJX009",
+    "short": "吉安国忠店"
+  },
+  {
+    "file": "6601151011832743944_广汽本田盈峰店_台卡_7655161417615917860.png",
+    "name": "广汽本田盈峰店",
+    "code": "DGD114",
+    "short": "惠州盈峰店"
+  },
+  {
+    "file": "6601151769126897677_广汽本田九通店分店_台卡_7655161417615885092.png",
+    "name": "广汽本田九通店分店",
+    "code": "DHEN45S001",
+    "short": "广汽本田九通店漯河分店"
+  },
+  {
+    "file": "6601152675146893316_广汽本田兴康店_台卡_7655161417615868708.png",
+    "name": "广汽本田兴康店",
+    "code": "DJX015",
+    "short": "赣州兴康店"
+  },
+  {
+    "file": "6601153654118418445_广汽本田博凯店_台卡_7655161417608758059.png",
+    "name": "广汽本田博凯店",
+    "code": "DHLJ05",
+    "short": "牡丹江博凯店"
+  },
+  {
+    "file": "6601153740579801101_广汽本田广星店_台卡_7655161417608741675.png",
+    "name": "广汽本田广星店",
+    "code": "DGX006",
+    "short": "南宁广星店"
+  },
+  {
+    "file": "6601154332521924611_广汽本田通驰店_台卡_7655161417608725291.png",
+    "name": "广汽本田通驰店",
+    "code": "DYN010",
+    "short": "曲靖通驰店"
+  },
+  {
+    "file": "6601157030369576963_广汽本田(华盛店)_台卡_7655161417608708907.png",
+    "name": "广汽本田(华盛店)",
+    "code": "DGX007",
+    "short": "贵港华盛店"
+  },
+  {
+    "file": "6601157097763637256_广汽本田轩泰店_台卡_7655161417608692523.png",
+    "name": "广汽本田轩泰店",
+    "code": "DTJ007",
+    "short": "天津轩泰店"
+  },
+  {
+    "file": "6601157425175201806_广汽本田(嘉兴佳田店)_台卡_7655161417608676139.png",
+    "name": "广汽本田(嘉兴佳田店)",
+    "code": "DZJ027",
+    "short": "嘉兴佳田店"
+  },
+  {
+    "file": "6601157841799612420_广汽本田(南京长昊店)_台卡_7655161417608659755.png",
+    "name": "广汽本田(南京长昊店)",
+    "code": "DJS036",
+    "short": "南京长昊店"
+  },
+  {
+    "file": "6601158781860579341_广汽本田利生店_台卡_7655161417608643371.png",
+    "name": "广汽本田利生店",
+    "code": "DGD047",
+    "short": "云浮利生店"
+  },
+  {
+    "file": "6601161664081430531_广汽本田(丰和店)_台卡_7655161417608626987.png",
+    "name": "广汽本田(丰和店)",
+    "code": "DJX024",
+    "short": "南昌丰和店"
+  },
+  {
+    "file": "6601162587176437773_广汽本田广通店_台卡_7655161417608610603.png",
+    "name": "广汽本田广通店",
+    "code": "DAH007",
+    "short": "淮南广通店"
+  },
+  {
+    "file": "6601163791050737667_广汽本田丰源店_台卡_7655161417608577835.png",
+    "name": "广汽本田丰源店",
+    "code": "DAH014",
+    "short": "亳州丰源店"
+  },
+  {
+    "file": "6601168677154850824_广汽本田肇庆肇田店_台卡_7655161417608512299.png",
+    "name": "广汽本田肇庆肇田店",
+    "code": "DGD013",
+    "short": "肇庆肇田店"
+  },
+  {
+    "file": "6601172286663837700_广汽本田恒信德龙店_台卡_7655161417608479531.png",
+    "name": "广汽本田恒信德龙店",
+    "code": "DHUB16",
+    "short": "咸宁恒信德龙店"
+  },
+  {
+    "file": "6601173694129637379_广汽本田日银店_台卡_7655161417608463147.png",
+    "name": "广汽本田日银店",
+    "code": "DBJ003",
+    "short": "北京日银店"
+  },
+  {
+    "file": "6601177104233007118_广汽本田(海沧店)_台卡_7655161417608446763.png",
+    "name": "广汽本田(海沧店)",
+    "code": "DFJ037",
+    "short": "厦门海沧店"
+  },
+  {
+    "file": "6601180767634589704_广汽本田天力店_台卡_7655161417608413995.png",
+    "name": "广汽本田天力店",
+    "code": "DHUN07",
+    "short": "常德天力店"
+  },
+  {
+    "file": "6601184096716589069_广汽本田(衡阳卓越店)_台卡_7655161417608364843.png",
+    "name": "广汽本田(衡阳卓越店)",
+    "code": "DHUN18",
+    "short": "衡阳卓越店"
+  },
+  {
+    "file": "6601184333451495432_广汽本田福清店_台卡_7655161417608348459.png",
+    "name": "广汽本田福清店",
+    "code": "DFJ017",
+    "short": "福州福清店"
+  },
+  {
+    "file": "6601184951415080963_广汽本田恒朗店_台卡_7655161417608332075.png",
+    "name": "广汽本田恒朗店",
+    "code": "DGD088",
+    "short": "东莞恒朗店"
+  },
+  {
+    "file": "6601185479989659651_广汽本田恒信致力店_台卡_7655161417608315691.png",
+    "name": "广汽本田恒信致力店",
+    "code": "DGZ011",
+    "short": "兴义恒信致力店"
+  },
+  {
+    "file": "6601187278574323720_广汽本田锦祥店_台卡_7655161417608299307.png",
+    "name": "广汽本田锦祥店",
+    "code": "DHEN30",
+    "short": "平顶山锦祥店"
+  },
+  {
+    "file": "6601188039848904707_广汽本田骏延(花山店)_台卡_7655161417608282923.png",
+    "name": "广汽本田骏延(花山店)",
+    "code": "DGD022S001",
+    "short": "广汽本田骏延店花山分店"
+  },
+  {
+    "file": "6601188477289629703_广汽本田泽胜店_台卡_7655161417608266539.png",
+    "name": "广汽本田泽胜店",
+    "code": "DSXW13",
+    "short": "延安泽胜店"
+  },
+  {
+    "file": "6601188820824098829_广汽本田濮华店_台卡_7655161417608250155.png",
+    "name": "广汽本田濮华店",
+    "code": "DHEN12",
+    "short": "濮阳濮华店"
+  },
+  {
+    "file": "6601188946347034631_广汽本田景顺店_台卡_7655161417608233771.png",
+    "name": "广汽本田景顺店",
+    "code": "DFJ026",
+    "short": "泉州景顺店"
+  },
+  {
+    "file": "6601189509017110535_广汽本田德恒店_台卡_7655161417608217387.png",
+    "name": "广汽本田德恒店",
+    "code": "DGZ006",
+    "short": "铜仁德恒店"
+  },
+  {
+    "file": "6601190565474240526_广汽本田(亚龙店)_台卡_7655161417608201003.png",
+    "name": "广汽本田(亚龙店)",
+    "code": "DSC019",
+    "short": "遂宁亚龙店"
+  },
+  {
+    "file": "6601190780738471939_广汽本田华升店_台卡_7655161417608184619.png",
+    "name": "广汽本田华升店",
+    "code": "DGD037",
+    "short": "东莞华升店"
+  },
+  {
+    "file": "6601191655598983181_广汽本田恒信致胜店_台卡_7655161417608168235.png",
+    "name": "广汽本田恒信致胜店",
+    "code": "DGZ010",
+    "short": "安顺恒信致胜店"
+  },
+  {
+    "file": "6601194430894442503_广汽本田瑞昇店_台卡_7655161417608135467.png",
+    "name": "广汽本田瑞昇店",
+    "code": "DSXE17",
+    "short": "运城瑞昇店"
+  },
+  {
+    "file": "6601196800579733512_广汽本田华益店_台卡_7655161417608119083.png",
+    "name": "广汽本田华益店",
+    "code": "DHUN15",
+    "short": "益阳华益店"
+  },
+  {
+    "file": "6601201512188217352_广汽本田(汇源店)_台卡_7655161417608102699.png",
+    "name": "广汽本田(汇源店)",
+    "code": "DGD115",
+    "short": "河源汇和店"
+  },
+  {
+    "file": "6601201762986641411_广汽本田华大店_台卡_7655161417608086315.png",
+    "name": "广汽本田华大店",
+    "code": "DLN012",
+    "short": "沈阳华大店"
+  },
+  {
+    "file": "6601203179348559876_广汽本田黄河店晋中分店_台卡_7655161417608069931.png",
+    "name": "广汽本田黄河店晋中分店",
+    "code": "DSXE16S001",
+    "short": "广汽本田黄河店晋中分店"
+  },
+  {
+    "file": "6601203699723290638_广汽本田松广店_台卡_7655161417608053547.png",
+    "name": "广汽本田松广店",
+    "code": "DSH008",
+    "short": "上海松广店"
+  },
+  {
+    "file": "6601204047976335373_广汽本田豪骏店_台卡_7655161417608037163.png",
+    "name": "广汽本田豪骏店",
+    "code": "DHUN21",
+    "short": "株洲豪骏店"
+  },
+  {
+    "file": "6601204256932382723_广汽本田创诚店_台卡_7655161417608004395.png",
+    "name": "广汽本田创诚店",
+    "code": "DSC010",
+    "short": "内江创诚店"
+  },
+  {
+    "file": "6601205331785680900_广汽本田昌华店_台卡_7655161417607988011.png",
+    "name": "广汽本田昌华店",
+    "code": "DSD023",
+    "short": "菏泽昌华店"
+  },
+  {
+    "file": "6601207698430101512_广汽本田金旺店_台卡_7655161417607971627.png",
+    "name": "广汽本田金旺店",
+    "code": "DSD034",
+    "short": "青州金旺店"
+  },
+  {
+    "file": "6601207818487859213_广汽本田(包河店)_台卡_7655161417607955243.png",
+    "name": "广汽本田(包河店)",
+    "code": "DAH008",
+    "short": "合肥包河店"
+  },
+  {
+    "file": "6601208938614491150_广汽本田(昆山合田行店)_台卡_7655161417607938859.png",
+    "name": "广汽本田(昆山合田行店)",
+    "code": "DJS044",
+    "short": "昆山合田行店"
+  },
+  {
+    "file": "6601209231028783111_广汽本田(盛和店)_台卡_7655161417607922475.png",
+    "name": "广汽本田(盛和店)",
+    "code": "DFJ030",
+    "short": "厦门盛和店"
+  },
+  {
+    "file": "6601209970312611854_广汽本田骏延店_台卡_7655161417607906091.png",
+    "name": "广汽本田骏延店",
+    "code": "DGD022",
+    "short": "广州骏延店"
+  },
+  {
+    "file": "6601211216415164430_广汽本田驰峰店_台卡_7655161417607889707.png",
+    "name": "广汽本田驰峰店",
+    "code": "DSD047",
+    "short": "潍坊驰峰店"
+  },
+  {
+    "file": "6601220506127435780_广汽本田凯通店_台卡_7655161417607873323.png",
+    "name": "广汽本田凯通店",
+    "code": "DTJ001",
+    "short": "天津凯通店"
+  },
+  {
+    "file": "6601220535974103043_广汽本田瑞尚店_台卡_7655161417607856939.png",
+    "name": "广汽本田瑞尚店",
+    "code": "DHEN31",
+    "short": "周口瑞尚店"
+  },
+  {
+    "file": "6601227527325222915_广汽本田(吉田店东台分店)_台卡_7655161417607840555.png",
+    "name": "广汽本田(吉田店东台分店)",
+    "code": "DJS021S002",
+    "short": "广汽本田吉田店东台分店"
+  },
+  {
+    "file": "6601233918223976451_广汽本田本通店三河分店_台卡_7655161417607824171.png",
+    "name": "广汽本田本通店三河分店",
+    "code": "DBJ014S001",
+    "short": "广汽本田本通店三河分店"
+  },
+  {
+    "file": "6601236114902616067_广汽本田广志店_台卡_7655161417607807787.png",
+    "name": "广汽本田广志店",
+    "code": "DJX017",
+    "short": "南昌广志店"
+  },
+  {
+    "file": "6601243585922729987_广汽本田(骏马店)_台卡_7655161417607775019.png",
+    "name": "广汽本田(骏马店)",
+    "code": "DXZ001",
+    "short": "拉萨骏马店"
+  },
+  {
+    "file": "6601243822686996488_广汽本田广迅店_台卡_7655161417607758635.png",
+    "name": "广汽本田广迅店",
+    "code": "DZJ051",
+    "short": "义乌广迅店"
+  },
+  {
+    "file": "6601245308955396104_广汽本田(石家庄恒达店)_台卡_7655161417607742251.png",
+    "name": "广汽本田(石家庄恒达店)",
+    "code": "DHEB02",
+    "short": "石家庄恒达店"
+  },
+  {
+    "file": "6601246653842212872_广汽本田东港店_台卡_7655161417607725867.png",
+    "name": "广汽本田东港店",
+    "code": "DSXE03",
+    "short": "晋城东港店"
+  },
+  {
+    "file": "6601249805891029000_广汽本田浩邦店_台卡_7655161417607709483.png",
+    "name": "广汽本田浩邦店",
+    "code": "DJS046",
+    "short": "常州浩邦店"
+  },
+  {
+    "file": "6601251046796822535_广汽本田盛元店_台卡_7655161417607693099.png",
+    "name": "广汽本田盛元店",
+    "code": "DFJ009",
+    "short": "厦门盛元店"
+  },
+  {
+    "file": "6601253919769233411_广汽本田万顺店_台卡_7655161417607676715.png",
+    "name": "广汽本田万顺店",
+    "code": "DHEN32",
+    "short": "新乡万顺店"
+  },
+  {
+    "file": "6601259872354830350_广汽本田新金泽店_台卡_7655161417607627563.png",
+    "name": "广汽本田新金泽店",
+    "code": "DHUN22",
+    "short": "邵阳新金泽店"
+  },
+  {
+    "file": "6601267922532829191_广汽本田天河店_台卡_7655161417607594795.png",
+    "name": "广汽本田天河店",
+    "code": "DGD011",
+    "short": "广州天河店"
+  },
+  {
+    "file": "6601269420515919885_广汽本田骏英店_台卡_7655161417607578411.png",
+    "name": "广汽本田骏英店",
+    "code": "DGD083",
+    "short": "英德骏英店"
+  },
+  {
+    "file": "6601269920011388941_广汽本田广物兴店_台卡_7655161417607562027.png",
+    "name": "广汽本田广物兴店",
+    "code": "DGD066",
+    "short": "汕尾广物兴店"
+  },
+  {
+    "file": "6601269932837570563_广汽本田山和店_台卡_7655161417607545643.png",
+    "name": "广汽本田山和店",
+    "code": "DSD006",
+    "short": "济南山和店"
+  },
+  {
+    "file": "6601270433683621902_广汽本田博爱店_台卡_7655161417607529259.png",
+    "name": "广汽本田博爱店",
+    "code": "DGD053",
+    "short": "中山博爱店"
+  },
+  {
+    "file": "6601270529280182276_广汽本田奥典店_台卡_7655161417607512875.png",
+    "name": "广汽本田奥典店",
+    "code": "DJL010",
+    "short": "四平奥典店"
+  },
+  {
+    "file": "6601270558271211528_广汽本田宏源店_台卡_7655161417607496491.png",
+    "name": "广汽本田宏源店",
+    "code": "DSC008",
+    "short": "泸州宏源店"
+  },
+  {
+    "file": "6601270731667933187_广汽本田中兴店_台卡_7655161417607480107.png",
+    "name": "广汽本田中兴店",
+    "code": "DZJ009",
+    "short": "宁波中兴店"
+  },
+  {
+    "file": "6601271130680461315_广汽本田(华神店)_台卡_7655161417607463723.png",
+    "name": "广汽本田(华神店)",
+    "code": "DHUB13",
+    "short": "随州华神店"
+  },
+  {
+    "file": "6601271237689739271_广汽本田光谷店_台卡_7655161417607447339.png",
+    "name": "广汽本田光谷店",
+    "code": "DHUB28",
+    "short": "武汉光谷店"
+  },
+  {
+    "file": "6601278440689633294_广汽本田华浩店_台卡_7655161417607398187.png",
+    "name": "广汽本田华浩店",
+    "code": "DHEB24",
+    "short": "河间华浩店"
+  },
+  {
+    "file": "6601281223299958788_广汽本田中润店_台卡_7655161417607381803.png",
+    "name": "广汽本田中润店",
+    "code": "DFJ022",
+    "short": "漳州中润店"
+  },
+  {
+    "file": "6601284460874827790_广汽本田鑫海店_台卡_7655161417607365419.png",
+    "name": "广汽本田鑫海店",
+    "code": "DNMG04",
+    "short": "呼和浩特鑫海店"
+  },
+  {
+    "file": "6610528252597372931_广汽本田大理长汇店_台卡_7655161417607349035.png",
+    "name": "广汽本田大理长汇店",
+    "code": "DYN021",
+    "short": "大理长汇店"
+  },
+  {
+    "file": "6610899446311946254_广汽本田广远店_台卡_7655161417607332651.png",
+    "name": "广汽本田广远店",
+    "code": "DJL013",
+    "short": "通化广远店"
+  },
+  {
+    "file": "6610985643092756494_广汽本田迅利店_台卡_7655161417607316267.png",
+    "name": "广汽本田迅利店",
+    "code": "DHEN15",
+    "short": "洛阳迅利店"
+  },
+  {
+    "file": "6610990509496207373_广汽本田广澳店辽源分店_台卡_7655161417607299883.png",
+    "name": "广汽本田广澳店辽源分店",
+    "code": "DJL014S001",
+    "short": "广汽本田广澳店辽源分店"
+  },
+  {
+    "file": "6611012993297680391_广汽本田长捷店_台卡_7655161417607283499.png",
+    "name": "广汽本田长捷店",
+    "code": "DCQ004",
+    "short": "重庆长捷店"
+  },
+  {
+    "file": "6611370850572568579_广汽本田宝驰店_台卡_7655161417607267115.png",
+    "name": "广汽本田宝驰店",
+    "code": "DSC029",
+    "short": "凉山宝驰店"
+  },
+  {
+    "file": "6612011745466648580_广汽本田路桥店_台卡_7655161417607250731.png",
+    "name": "广汽本田路桥店",
+    "code": "DZJ030",
+    "short": "台州路桥店"
+  },
+  {
+    "file": "6612011745525368839_广汽本田菊城店_台卡_7655161417607234347.png",
+    "name": "广汽本田菊城店",
+    "code": "DGD032",
+    "short": "中山菊城店"
+  },
+  {
+    "file": "6612011745655392260_广汽本田锦瑞店_台卡_7655161417607217963.png",
+    "name": "广汽本田锦瑞店",
+    "code": "DHEN26",
+    "short": "商丘锦瑞店"
+  },
+  {
+    "file": "6612255315184322568_广汽本田恒得利店_台卡_7655161417607201579.png",
+    "name": "广汽本田恒得利店",
+    "code": "DSXW15",
+    "short": "西安恒得利店"
+  },
+  {
+    "file": "6618422877727229966_广汽本田嘉瑞隆店_台卡_7655161417607152427.png",
+    "name": "广汽本田嘉瑞隆店",
+    "code": "DQH002",
+    "short": "西宁嘉瑞隆店"
+  },
+  {
+    "file": "6620595922193614862_广汽本田(凯立店)_台卡_7655161417600385833.png",
+    "name": "广汽本田(凯立店)",
+    "code": "DHLJ16",
+    "short": "双鸭山凯立店"
+  },
+  {
+    "file": "6620927959714760717_广汽本田信达通店_台卡_7655161417600369449.png",
+    "name": "广汽本田信达通店",
+    "code": "DNMG03",
+    "short": "鄂尔多斯信达通店"
+  },
+  {
+    "file": "6622523629739444238_广汽本田(龙岩广骏店)_台卡_7655161417600353065.png",
+    "name": "广汽本田(龙岩广骏店)",
+    "code": "DFJ010",
+    "short": "龙岩广骏店"
+  },
+  {
+    "file": "6626601845823375367_广汽本田(中源店)_台卡_7655161417600303913.png",
+    "name": "广汽本田(中源店)",
+    "code": "DAH005",
+    "short": "阜阳中源店"
+  },
+  {
+    "file": "6627201960749565965_广汽本田大东吴店_台卡_7655161417600287529.png",
+    "name": "广汽本田大东吴店",
+    "code": "DZJ045",
+    "short": "湖州大东吴店"
+  },
+  {
+    "file": "6627309567950718984_广汽本田金裕店_台卡_7655161417600271145.png",
+    "name": "广汽本田金裕店",
+    "code": "DGX013",
+    "short": "钦州金裕店"
+  },
+  {
+    "file": "6628043232368396301_广汽本田安利达店_台卡_7655161417600254761.png",
+    "name": "广汽本田安利达店",
+    "code": "DSXW03",
+    "short": "宝鸡安利达店"
+  },
+  {
+    "file": "6629104203790813188_广汽本田泰达和店_台卡_7655161417600238377.png",
+    "name": "广汽本田泰达和店",
+    "code": "DNMG17",
+    "short": "锡林浩特泰达和店"
+  },
+  {
+    "file": "6630696209809934340_广汽本田(龙成店)_台卡_7655161417600221993.png",
+    "name": "广汽本田(龙成店)",
+    "code": "DGD063",
+    "short": "东莞龙成店"
+  },
+  {
+    "file": "6632156135598065671_广汽本田程跃店_台卡_7655161417600205609.png",
+    "name": "广汽本田程跃店",
+    "code": "DNMG15",
+    "short": "兴安盟程跃店"
+  },
+  {
+    "file": "6632510454088337412_广汽本田文华祥瑞店_台卡_7655161417600189225.png",
+    "name": "广汽本田文华祥瑞店",
+    "code": "DFJ028",
+    "short": "厦门文华祥瑞店"
+  },
+  {
+    "file": "6634387308592236548_广汽本田(本溪晟大店)_台卡_7655161417600172841.png",
+    "name": "广汽本田(本溪晟大店)",
+    "code": "DLN012S002",
+    "short": "广汽本田华大店本溪分店"
+  },
+  {
+    "file": "6634824751317518344_广汽本田(唐山冀东店)_台卡_7655161417600156457.png",
+    "name": "广汽本田(唐山冀东店)",
+    "code": "DHEB03",
+    "short": "唐山冀东店"
+  },
+  {
+    "file": "6636157746687363076_广汽本田骏昇店_台卡_7655161417600140073.png",
+    "name": "广汽本田骏昇店",
+    "code": "DGD069",
+    "short": "茂名骏昇店"
+  },
+  {
+    "file": "6636164138848634883_广汽本田广澳店_台卡_7655161417600107305.png",
+    "name": "广汽本田广澳店",
+    "code": "DJL014",
+    "short": "白山广澳店"
+  },
+  {
+    "file": "6636166228681558024_广汽本田(常熟银理店)_台卡_7655161417600090921.png",
+    "name": "广汽本田(常熟银理店)",
+    "code": "DJS014",
+    "short": "常熟银理店"
+  },
+  {
+    "file": "6638347669083392003_广汽本田余姚信捷店_台卡_7655161417600041769.png",
+    "name": "广汽本田余姚信捷店",
+    "code": "DZJ026",
+    "short": "余姚信捷店"
+  },
+  {
+    "file": "6638452908297963527_广汽本田玉溪店_台卡_7655161417600025385.png",
+    "name": "广汽本田玉溪店",
+    "code": "DYN003",
+    "short": "云南玉溪店"
+  },
+  {
+    "file": "6645084653520701454_广汽本田兴盛店_台卡_7655161417599992617.png",
+    "name": "广汽本田兴盛店",
+    "code": "DHEN44",
+    "short": "南阳兴盛店"
+  },
+  {
+    "file": "6647004626975492104_广汽本田济宁鸿基4S店_台卡_7655161417599976233.png",
+    "name": "广汽本田济宁鸿基4S店",
+    "code": "DSD010",
+    "short": "济宁鸿基店"
+  },
+  {
+    "file": "6649357391580186638_广汽本田(宝苑店)_台卡_7655161417599959849.png",
+    "name": "广汽本田(宝苑店)",
+    "code": "DJS017",
+    "short": "泰州宝苑店"
+  },
+  {
+    "file": "6651735506449106952_广汽本田骏业店_台卡_7655161417599943465.png",
+    "name": "广汽本田骏业店",
+    "code": "DSD021",
+    "short": "临沂骏业店"
+  },
+  {
+    "file": "6651883233346701323_广汽本田长轩店_台卡_7655161417599927081.png",
+    "name": "广汽本田长轩店",
+    "code": "DYN015",
+    "short": "楚雄长轩店"
+  },
+  {
+    "file": "6662569943541843982_广汽本田兴之杰店_台卡_7655161417599910697.png",
+    "name": "广汽本田兴之杰店",
+    "code": "DHEB26",
+    "short": "邢台兴之杰店"
+  },
+  {
+    "file": "6666232124812560398_广汽本田骏力店_台卡_7655161417599894313.png",
+    "name": "广汽本田骏力店",
+    "code": "DJS012",
+    "short": "连云港骏力店"
+  },
+  {
+    "file": "6679650785246087181_广汽本田(建德分店)_台卡_7655161417599877929.png",
+    "name": "广汽本田(建德分店)",
+    "code": "DZJ005S001",
+    "short": "广汽本田之田店建德分店"
+  },
+  {
+    "file": "6680046093767591944_广汽本田四季信通店_台卡_7655161417599861545.png",
+    "name": "广汽本田四季信通店",
+    "code": "DBJ022",
+    "short": "北京四季信通店"
+  },
+  {
+    "file": "6682544277320386568_广汽本田骏驰店_台卡_7655161417599845161.png",
+    "name": "广汽本田骏驰店",
+    "code": "DHEB04",
+    "short": "邯郸骏驰店"
+  },
+  {
+    "file": "6688923057890904075_广汽本田恒信致合店_台卡_7655161417599812393.png",
+    "name": "广汽本田恒信致合店",
+    "code": "DAH018",
+    "short": "合肥恒信致合店"
+  },
+  {
+    "file": "6693014693033805827_广汽本田凡雷店_台卡_7655161417599796009.png",
+    "name": "广汽本田凡雷店",
+    "code": "DHUB22",
+    "short": "荆门凡雷店"
+  },
+  {
+    "file": "6697586438755698701_广汽本田(天惠店)_台卡_7655161417599779625.png",
+    "name": "广汽本田(天惠店)",
+    "code": "DYN014",
+    "short": "文山天惠店"
+  },
+  {
+    "file": "6704509129957885955_广汽本田阳光店_台卡_7655161417599746857.png",
+    "name": "广汽本田阳光店",
+    "code": "DSXW17",
+    "short": "安康阳光店"
+  },
+  {
+    "file": "6722641002026387469_广汽本田(天岳顺宜店)_台卡_7655161417599730473.png",
+    "name": "广汽本田(天岳顺宜店)",
+    "code": "DGS005",
+    "short": "张掖天岳顺宜店"
+  },
+  {
+    "file": "6726027021450872835_广汽本田骏鑫店_台卡_7655161417599714089.png",
+    "name": "广汽本田骏鑫店",
+    "code": "DJS052",
+    "short": "徐州骏鑫店"
+  },
+  {
+    "file": "6727845446271682568_广汽本田致通竣程店_台卡_7655161417599697705.png",
+    "name": "广汽本田致通竣程店",
+    "code": "DHEB28",
+    "short": "衡水致通竣程店"
+  },
+  {
+    "file": "6730525585921034251_广汽本田长兴店_台卡_7655161417599664937.png",
+    "name": "广汽本田长兴店",
+    "code": "DGD056",
+    "short": "佛山长兴店"
+  },
+  {
+    "file": "6732786118258870280_广汽本田(苏州桥店)_台卡_7655161417599648553.png",
+    "name": "广汽本田(苏州桥店)",
+    "code": "DBJ016",
+    "short": "北京苏州桥店"
+  },
+  {
+    "file": "6747974900973160460_广汽本田(朗丰店)_台卡_7655161417599583017.png",
+    "name": "广汽本田(朗丰店)",
+    "code": "DSD068",
+    "short": "泰安朗丰店"
+  },
+  {
+    "file": "6753991172013836300_广汽本田(安捷店)_台卡_7655161417599550249.png",
+    "name": "广汽本田(安捷店)",
+    "code": "DSC025",
+    "short": "乐山安捷店"
+  },
+  {
+    "file": "6760598681826740231_广汽本田宝康店_台卡_7655161417599533865.png",
+    "name": "广汽本田宝康店",
+    "code": "DJS045",
+    "short": "苏州宝康店"
+  },
+  {
+    "file": "6769197753047320588_广汽本田长展店_台卡_7655161417599517481.png",
+    "name": "广汽本田长展店",
+    "code": "DHLJ19",
+    "short": "绥化长展店"
+  },
+  {
+    "file": "6769227490201241612_广汽本田卓凯店_台卡_7655161417599501097.png",
+    "name": "广汽本田卓凯店",
+    "code": "DLN026",
+    "short": "铁岭卓凯店"
+  },
+  {
+    "file": "6778680150071461891_广汽本田(上海长雅店)_台卡_7655161417599484713.png",
+    "name": "广汽本田(上海长雅店)",
+    "code": "DSH016",
+    "short": "上海长雅店"
+  },
+  {
+    "file": "6781045149754607620_广汽本田晋江福埔旗舰店_台卡_7655161417599468329.png",
+    "name": "广汽本田晋江福埔旗舰店",
+    "code": "DFJ032",
+    "short": "晋江福埔店"
+  },
+  {
+    "file": "6782948961427703819_广汽本田海盟店_台卡_7655161417599451945.png",
+    "name": "广汽本田海盟店",
+    "code": "DJS009",
+    "short": "南通海盟店"
+  },
+  {
+    "file": "6788997056049530884_广汽本田(长怡店)_台卡_7655161417599435561.png",
+    "name": "广汽本田(长怡店)",
+    "code": "DBJ015",
+    "short": "北京长怡店"
+  },
+  {
+    "file": "6797668896716572680_广汽本田达田店_台卡_7655161417599419177.png",
+    "name": "广汽本田达田店",
+    "code": "DGD010",
+    "short": "珠海达田店"
+  },
+  {
+    "file": "6799409496612538372_广汽本田白云店_台卡_7655161417599402793.png",
+    "name": "广汽本田白云店",
+    "code": "DSXW04",
+    "short": "西安白云店"
+  },
+  {
+    "file": "6800176227488417803_广汽本田乐广店_台卡_7655161417599386409.png",
+    "name": "广汽本田乐广店",
+    "code": "DZJ054",
+    "short": "乐清乐广店"
+  },
+  {
+    "file": "6808479255698114568_广汽本田普宁店_台卡_7655161417599370025.png",
+    "name": "广汽本田普宁店",
+    "code": "DGD055S002",
+    "short": "广汽本田聚源店普宁分店"
+  },
+  {
+    "file": "6809484380864530444_广汽本田(百大店)_台卡_7655161417599353641.png",
+    "name": "广汽本田(百大店)",
+    "code": "DLN027",
+    "short": "丹东百大店"
+  },
+  {
+    "file": "6815202711907207171_广汽本田长荣店_台卡_7655161417599337257.png",
+    "name": "广汽本田长荣店",
+    "code": "DGD080",
+    "short": "惠州长荣店"
+  },
+  {
+    "file": "6815822374475253768_广汽本田佛山行安店_台卡_7655161417599304489.png",
+    "name": "广汽本田佛山行安店",
+    "code": "DGD098",
+    "short": "佛山行安店"
+  },
+  {
+    "file": "6816287579558774797_广汽本田(凯华凯信店)_台卡_7655161417599288105.png",
+    "name": "广汽本田(凯华凯信店)",
+    "code": "DHLJ17",
+    "short": "鹤岗凯华凯信店"
+  },
+  {
+    "file": "6817606573490210819_广汽本田嘉航店_台卡_7655161417599271721.png",
+    "name": "广汽本田嘉航店",
+    "code": "DSXE20",
+    "short": "大同嘉航店"
+  },
+  {
+    "file": "6817984959219877892_广汽本田益诚店_台卡_7655161417599255337.png",
+    "name": "广汽本田益诚店",
+    "code": "DYN017",
+    "short": "昭通益诚店"
+  },
+  {
+    "file": "6818733124596402191_广汽本田袍江店_台卡_7655161417599238953.png",
+    "name": "广汽本田袍江店",
+    "code": "DZJ063",
+    "short": "绍兴袍江店"
+  },
+  {
+    "file": "6820896255045093390_广汽本田胜华店_台卡_7655161417599222569.png",
+    "name": "广汽本田胜华店",
+    "code": "DSD039",
+    "short": "济南胜华店"
+  },
+  {
+    "file": "6835172542060234767_广汽本田迅利店(三门峡分店)_台卡_7655161417599173417.png",
+    "name": "广汽本田迅利店(三门峡分店)",
+    "code": "DHEN15S003",
+    "short": "广汽本田迅利店三门峡分店"
+  },
+  {
+    "file": "6835419927424305167_广汽本田照程店_台卡_7655161417599157033.png",
+    "name": "广汽本田照程店",
+    "code": "DJS051",
+    "short": "无锡照程店"
+  },
+  {
+    "file": "6850033560838031375_广汽本田(裕田店)_台卡_7655161417599107881.png",
+    "name": "广汽本田(裕田店)",
+    "code": "DJX018",
+    "short": "九江裕田店"
+  },
+  {
+    "file": "6855943363770812423_广汽本田长融东环店_台卡_7655161417599091497.png",
+    "name": "广汽本田长融东环店",
+    "code": "DGX018",
+    "short": "柳州长融城中店"
+  },
+  {
+    "file": "6856580985589336078_广汽本田宝田店_台卡_7655161417599075113.png",
+    "name": "广汽本田宝田店",
+    "code": "DGD078",
+    "short": "茂名宝田店"
+  },
+  {
+    "file": "6870193406791010304_广汽本田(武冈金泽4S店)_台卡_7655161417599042345.png",
+    "name": "广汽本田(武冈金泽4S店)",
+    "code": "DHUN22S001",
+    "short": "广汽本田新金泽店武冈分店"
+  },
+  {
+    "file": "6887935624964212747_广汽本田九通店_台卡_7655161417599009577.png",
+    "name": "广汽本田九通店",
+    "code": "DHEN45",
+    "short": "郑州九通店"
+  },
+  {
+    "file": "6888589154741929984_广汽本田(郴州汇田店)_台卡_7655161417598993193.png",
+    "name": "广汽本田(郴州汇田店)",
+    "code": "DHUN06",
+    "short": "郴州汇田店"
+  },
+  {
+    "file": "6891201410113734664_广汽本田潇湘店_台卡_7655161417598976809.png",
+    "name": "广汽本田潇湘店",
+    "code": "DHUN10",
+    "short": "长沙潇湘店"
+  },
+  {
+    "file": "6891541949325510671_广汽本田(焦作大硕店)_台卡_7655161417598960425.png",
+    "name": "广汽本田(焦作大硕店)",
+    "code": "DHEN41",
+    "short": "焦作大硕店"
+  },
+  {
+    "file": "6891546400962660367_广汽本田岳阳铭正店_台卡_7655161417598944041.png",
+    "name": "广汽本田岳阳铭正店",
+    "code": "DHUN31",
+    "short": "岳阳铭正店"
+  },
+  {
+    "file": "6892005169039411213_广汽本田伟泽店_台卡_7655161417598927657.png",
+    "name": "广汽本田伟泽店",
+    "code": "DAH023",
+    "short": "铜陵伟泽店"
+  },
+  {
+    "file": "6893996579745695758_广汽本田信阳宏硕店_台卡_7655161417598911273.png",
+    "name": "广汽本田信阳宏硕店",
+    "code": "DHEN40",
+    "short": "信阳宏硕店"
+  },
+  {
+    "file": "6899931606857811968_广汽本田东港店高平分店_台卡_7655161417598878505.png",
+    "name": "广汽本田东港店高平分店",
+    "code": "DSXE03S001",
+    "short": "广汽本田东港店高平分店"
+  },
+  {
+    "file": "6906237692112013320_广汽本田(南江店)_台卡_7655161417598862121.png",
+    "name": "广汽本田(南江店)",
+    "code": "DXJ004",
+    "short": "库尔勒南江店"
+  },
+  {
+    "file": "6906980565765851144_广汽本田长鹏专营店_台卡_7655161417598845737.png",
+    "name": "广汽本田长鹏专营店",
+    "code": "DXJ009",
+    "short": "昌吉长鹏店"
+  },
+  {
+    "file": "6914772925518186499_广汽本田铭进店_台卡_7655161417598829353.png",
+    "name": "广汽本田铭进店",
+    "code": "DCQ010",
+    "short": "重庆铭进店"
+  },
+  {
+    "file": "6926275315983452175_广汽本田(华吕店)_台卡_7655161417598812969.png",
+    "name": "广汽本田(华吕店)",
+    "code": "DSXE13",
+    "short": "吕梁华吕店"
+  },
+  {
+    "file": "6933697480672413703_广汽本田(武义店)_台卡_7655161417598796585.png",
+    "name": "广汽本田(武义店)",
+    "code": "DZJ003S001",
+    "short": "广汽本田金华店武义分店"
+  },
+  {
+    "file": "6935553636760029224_广汽本田泰合店_台卡_7655161417598763817.png",
+    "name": "广汽本田泰合店",
+    "code": "DSD026",
+    "short": "潍坊泰合店"
+  },
+  {
+    "file": "6951271287561914375_广汽本田(浏阳广本九源店)_台卡_7655161417591997247.png",
+    "name": "广汽本田(浏阳广本九源店)",
+    "code": "DHUN25S001",
+    "short": "广汽本田九城店浏阳分店"
+  },
+  {
+    "file": "6962921531408222216_广汽本田汽车茶城特约销售服务店_台卡_7655161417591964479.png",
+    "name": "广汽本田汽车茶城特约销售服务店",
+    "code": "DYN018",
+    "short": "普洱茶城店"
+  },
+  {
+    "file": "6971920000470747170_广汽本田富田店_台卡_7655161417591948095.png",
+    "name": "广汽本田富田店",
+    "code": "DZJ035",
+    "short": "富阳富田店"
+  },
+  {
+    "file": "6984619285268137998_广汽本田(齐阳店)_台卡_7655161417591931711.png",
+    "name": "广汽本田(齐阳店)",
+    "code": "DHEB01",
+    "short": "保定齐阳店"
+  },
+  {
+    "file": "6984996853750990885_广汽本田滨海店_台卡_7655161417591915327.png",
+    "name": "广汽本田滨海店",
+    "code": "DTJ010",
+    "short": "天津滨海店"
+  },
+  {
+    "file": "6984998932027803685_广汽本田(雨花店)_台卡_7655161417591898943.png",
+    "name": "广汽本田(雨花店)",
+    "code": "DHUN34",
+    "short": "长沙雨花店"
+  },
+  {
+    "file": "6986110293998831629_广汽本田(新鑫店)_台卡_7655161417591882559.png",
+    "name": "广汽本田(新鑫店)",
+    "code": "DFJ016",
+    "short": "泉州新鑫店"
+  },
+  {
+    "file": "6986116700533950477_广汽本田之田店_台卡_7655161417591866175.png",
+    "name": "广汽本田之田店",
+    "code": "DZJ005",
+    "short": "杭州之田店"
+  },
+  {
+    "file": "6996513139424495653_广汽本田广德行店_台卡_7655161417591833407.png",
+    "name": "广汽本田广德行店",
+    "code": "DSD064",
+    "short": "青岛广德行店"
+  },
+  {
+    "file": "6997577804720113700_广汽本田株洲宏骏_台卡_7655161417591817023.png",
+    "name": "广汽本田株洲宏骏",
+    "code": "DHUN35",
+    "short": "株洲宏骏店"
+  },
+  {
+    "file": "6998770452231358468_广汽本田悦友店_台卡_7655161417591800639.png",
+    "name": "广汽本田悦友店",
+    "code": "DHAN04",
+    "short": "海口悦友店"
+  },
+  {
+    "file": "7001684078583875620_广汽本田(泓辉店)_台卡_7655161417591784255.png",
+    "name": "广汽本田(泓辉店)",
+    "code": "DXJ010",
+    "short": "哈密泓辉店"
+  },
+  {
+    "file": "7012208078787463182_广汽本田(永田店)_台卡_7655161417591767871.png",
+    "name": "广汽本田(永田店)",
+    "code": "DZJ028",
+    "short": "永康永田店"
+  },
+  {
+    "file": "7012210089633581093_广汽本田(阜新凯程特约店)_台卡_7655161417591751487.png",
+    "name": "广汽本田(阜新凯程特约店)",
+    "code": "DLN028",
+    "short": "阜新凯程店"
+  },
+  {
+    "file": "7015769095060588585_凯华新通广汽本田4S店_台卡_7655161417591735103.png",
+    "name": "凯华新通广汽本田4S店",
+    "code": "DHLJ21",
+    "short": "佳木斯凯华新通店"
+  },
+  {
+    "file": "7022458490639616031_广汽本田长友利群店_台卡_7655161417591685951.png",
+    "name": "广汽本田长友利群店",
+    "code": "DXJ007",
+    "short": "乌鲁木齐长友利群店"
+  },
+  {
+    "file": "7037777092041246756_广汽本田广宸店_台卡_7655161417591669567.png",
+    "name": "广汽本田广宸店",
+    "code": "DHUN33",
+    "short": "郴州广宸店"
+  },
+  {
+    "file": "7038922429334292517_广汽本田吴川骏源店_台卡_7655161417591653183.png",
+    "name": "广汽本田吴川骏源店",
+    "code": "DGD099",
+    "short": "湛江骏源店"
+  },
+  {
+    "file": "7067737144768333861_广汽本田亿俊店(新塘店)_台卡_7655161417591620415.png",
+    "name": "广汽本田亿俊店(新塘店)",
+    "code": "DGD041",
+    "short": "增城亿俊店"
+  },
+  {
+    "file": "7092701907268929566_广汽本田(龙岗店)_台卡_7655161417591604031.png",
+    "name": "广汽本田(龙岗店)",
+    "code": "DGD031",
+    "short": "深圳龙岗店"
+  },
+  {
+    "file": "7148310897373644841_广汽本田长津祥店_台卡_7673696297840280346.png",
+    "name": "广汽本田长津祥店",
+    "code": "DTJ012",
+    "short": "天津长津祥店"
+  },
+  {
+    "file": "7178766833586014260_广汽本田伊犁长永店_台卡_7655161417591522111.png",
+    "name": "广汽本田伊犁长永店",
+    "code": "DXJ006",
+    "short": "伊犁长永店"
+  },
+  {
+    "file": "7198359137544046607_温州广汽本田正大店_台卡_7655161417591489343.png",
+    "name": "温州广汽本田正大店",
+    "code": "DZJ052",
+    "short": "温州正大店"
+  },
+  {
+    "file": "7227693710555744293_广汽本田长鑫店_台卡_7655161417591472959.png",
+    "name": "广汽本田长鑫店",
+    "code": "DCQ011",
+    "short": "重庆长鑫店"
+  },
+  {
+    "file": "7231488578692319271_东莞聚通本田-4S店_台卡_7655161417591423807.png",
+    "name": "东莞聚通本田-4S店",
+    "code": "DGD096",
+    "short": "东莞聚通店"
+  },
+  {
+    "file": "7231488750696532001_广汽本田吴忠国喜店_台卡_7655161417591407423.png",
+    "name": "广汽本田吴忠国喜店",
+    "code": "DNX004",
+    "short": "吴忠国喜浩瀚店"
+  },
+  {
+    "file": "7231488780933269538_广汽本田(通州店)_台卡_7655161417591391039.png",
+    "name": "广汽本田(通州店)",
+    "code": "DBJ014",
+    "short": "北京通州店"
+  },
+  {
+    "file": "7231490683599587363_广汽本田东莞聚成店_台卡_7655161417591374655.png",
+    "name": "广汽本田东莞聚成店",
+    "code": "DGD006",
+    "short": "东莞聚成店"
+  },
+  {
+    "file": "7232156140350474298_广汽本田宜春宜田店_台卡_7655161417591358271.png",
+    "name": "广汽本田宜春宜田店",
+    "code": "DJX022",
+    "short": "宜春宜田店"
+  },
+  {
+    "file": "7238455884467144741_广汽本田大雍冉祥店_台卡_7655161417591325503.png",
+    "name": "广汽本田大雍冉祥店",
+    "code": "DHUB26",
+    "short": "十堰大雍冉祥店"
+  },
+  {
+    "file": "7240080333188630580_广汽本田(阿克苏南疆致远店)_台卡_7655161417591309119.png",
+    "name": "广汽本田(阿克苏南疆致远店)",
+    "code": "DXJ005",
+    "short": "阿克苏致远店"
+  },
+  {
+    "file": "7247495092888406031_广汽本田恒力店_台卡_7655161417591276351.png",
+    "name": "广汽本田恒力店",
+    "code": "DSXW12",
+    "short": "榆林恒力店"
+  },
+  {
+    "file": "7247855555237120034_广汽本田成都长昱店_台卡_7655161417591259967.png",
+    "name": "广汽本田成都长昱店",
+    "code": "DSC033",
+    "short": "成都长昱店"
+  },
+  {
+    "file": "7265927744020547596_广汽本田裕龙贵达店_台卡_7655161417591243583.png",
+    "name": "广汽本田裕龙贵达店",
+    "code": "DGZ014",
+    "short": "贵阳裕龙贵达店"
+  },
+  {
+    "file": "7267143872638093352_广汽本田迅利店(济源分店)_台卡_7655161417591227199.png",
+    "name": "广汽本田迅利店(济源分店)",
+    "code": "DHEN15S001",
+    "short": "广汽本田迅利店济源分店"
+  },
+  {
+    "file": "7268247436127127612_广汽本田三明玖龙4S店(沙县店)_台卡_7655161417591194431.png",
+    "name": "广汽本田三明玖龙4S店(沙县店)",
+    "code": "DFJ025",
+    "short": "三明玖龙店"
+  },
+  {
+    "file": "7275182566750029824_广汽本田金时秦皇店_台卡_7655161417591178047.png",
+    "name": "广汽本田金时秦皇店",
+    "code": "DHEB30",
+    "short": "秦皇岛金时秦皇店"
+  },
+  {
+    "file": "7284921610643965971_广汽本田第一店(第四代标准旗舰店)_台卡_7655161417591145279.png",
+    "name": "广汽本田第一店(第四代标准旗舰店)",
+    "code": "DGD001",
+    "short": "广本一店"
+  },
+  {
+    "file": "7293007791336196150_广汽本田(日新店)_台卡_7655161417591128895.png",
+    "name": "广汽本田(日新店)",
+    "code": "DHEB10",
+    "short": "石家庄日新店"
+  },
+  {
+    "file": "7312431808677677066_广汽本田华菱通达店_台卡_7655161417591096127.png",
+    "name": "广汽本田华菱通达店",
+    "code": "DHLJ20",
+    "short": "齐齐哈尔华菱通达店"
+  },
+  {
+    "file": "7337955507715442722_广汽本田新征程店_台卡_7655161417591079743.png",
+    "name": "广汽本田新征程店",
+    "code": "DZJ065",
+    "short": "义乌新征程店"
+  },
+  {
+    "file": "7353194086938970152_广汽本田(宏泽店)_台卡_7655161417591063359.png",
+    "name": "广汽本田(宏泽店)",
+    "code": "DZJ058",
+    "short": "温岭宏泽店"
+  },
+  {
+    "file": "7359431864924243995_广汽本田(朝阳星河店)_台卡_7655161417591046975.png",
+    "name": "广汽本田(朝阳星河店)",
+    "code": "DLN010S001",
+    "short": "广汽本田星河店朝阳分店"
+  },
+  {
+    "file": "7365037445663967244_广汽本田北京长韬(顺义店)_台卡_7655161417591030591.png",
+    "name": "广汽本田北京长韬(顺义店)",
+    "code": "DBJ025",
+    "short": "北京长韬店"
+  },
+  {
+    "file": "7376892454152177705_广汽本田(苏新店)_台卡_7655161417591014207.png",
+    "name": "广汽本田(苏新店)",
+    "code": "DJS003",
+    "short": "苏州苏新店"
+  },
+  {
+    "file": "7388858206527457334_广汽本田(廊坊瑞岑店)_台卡_7655161417590981439.png",
+    "name": "广汽本田(廊坊瑞岑店)",
+    "code": "DHEB22",
+    "short": "廊坊瑞岑店"
+  },
+  {
+    "file": "7401322695465371659_广汽本田(龙华店)_台卡_7655161417590965055.png",
+    "name": "广汽本田(龙华店)",
+    "code": "DGD057",
+    "short": "深圳龙华店"
+  },
+  {
+    "file": "7411391291071662143_广汽本田华胥店_台卡_7655161417590948671.png",
+    "name": "广汽本田华胥店",
+    "code": "DFJ036",
+    "short": "福州华胥店"
+  },
+  {
+    "file": "7429651892436731904_广汽本田(城关诚利源店)_台卡_7655161417590915903.png",
+    "name": "广汽本田(城关诚利源店)",
+    "code": "DGS002",
+    "short": "兰州诚利源店"
+  },
+  {
+    "file": "7439552105108473906_广汽本田顺合(烟台店)_台卡_7655161417590883135.png",
+    "name": "广汽本田顺合(烟台店)",
+    "code": "DSD058",
+    "short": "烟台顺合店"
+  },
+  {
+    "file": "7439942592659195919_广汽本田鲲旗(唐山店)_台卡_7655161417590866751.png",
+    "name": "广汽本田鲲旗(唐山店)",
+    "code": "DHEB37",
+    "short": "唐山鲲旗店"
+  },
+  {
+    "file": "7456964937433548839_广汽本田(金鸿正店)_台卡_7655161417590833983.png",
+    "name": "广汽本田(金鸿正店)",
+    "code": "DYN020",
+    "short": "丽江金鸿正店"
+  },
+  {
+    "file": "7462627488254920743_广汽本田(威海瑞洋店)_台卡_7655161417590801215.png",
+    "name": "广汽本田(威海瑞洋店)",
+    "code": "DSD037",
+    "short": "威海瑞洋店"
+  },
+  {
+    "file": "7463715635185322035_广汽本田(红旭店)_台卡_7655161417590784831.png",
+    "name": "广汽本田(红旭店)",
+    "code": "DZJ011",
+    "short": "瑞安红旭店"
+  },
+  {
+    "file": "7463723181455443980_广汽本田(罗村店)_台卡_7655161417590768447.png",
+    "name": "广汽本田(罗村店)",
+    "code": "DGD094",
+    "short": "佛山时利和罗村店"
+  },
+  {
+    "file": "7471983716902897716_广汽本田广潍店_台卡_7655161417590752063.png",
+    "name": "广汽本田广潍店",
+    "code": "DSD065",
+    "short": "日照广潍店"
+  },
+  {
+    "file": "7488942497587005476_广汽本田(景田店黄石分店)_台卡_7655161417590719295.png",
+    "name": "广汽本田(景田店黄石分店)",
+    "code": "DHUB04S001",
+    "short": "广汽本田景田店黄石分店"
+  },
+  {
+    "file": "7491547148283021353_广汽本田(安庆鑫合店)_台卡_7655161417590702911.png",
+    "name": "广汽本田(安庆鑫合店)",
+    "code": "DJX022S001",
+    "short": "广汽本田宜田店安庆分店"
+  },
+  {
+    "file": "7492961645779257363_广汽本田(长缘店)_台卡_7655161417590686527.png",
+    "name": "广汽本田(长缘店)",
+    "code": "DSC024",
+    "short": "成都长缘店"
+  },
+  {
+    "file": "7496447448622041139_广汽本田(莱安店)_台卡_7655161417590637375.png",
+    "name": "广汽本田(莱安店)",
+    "code": "DHEB38",
+    "short": "邯郸莱安店"
+  },
+  {
+    "file": "7509306055496173594_广汽本田金峰店_台卡_7655161417590620991.png",
+    "name": "广汽本田金峰店",
+    "code": "DGX021",
+    "short": "玉林金峰店"
+  },
+  {
+    "file": "7512350024861222964_广汽本田(北京华通店)_台卡_7655161417590604607.png",
+    "name": "广汽本田(北京华通店)",
+    "code": "DBJ005",
+    "short": "北京华通店"
+  },
+  {
+    "file": "7561676462281984035_广汽本田德恒店(凯里分店)_台卡_7655161417590588223.png",
+    "name": "广汽本田德恒店(凯里分店)",
+    "code": "DGZ006S001",
+    "short": "广汽本田德恒店凯里分店"
+  },
+  {
+    "file": "7570211040101992488_广汽本田鼎骏店_台卡_7655161417590571839.png",
+    "name": "广汽本田鼎骏店",
+    "code": "DNMG18",
+    "short": "呼伦贝尔鼎骏店"
+  },
+  {
+    "file": "7590845190727731240_广汽本田(蒙自店)_台卡_7655161417590539071.png",
+    "name": "广汽本田(蒙自店)",
+    "code": "DYN003S005",
+    "short": "广汽本田玉溪店红河分店"
+  },
+  {
+    "file": "7593272362028501028_广汽本田(毕节4S店)_台卡_7655161417590522687.png",
+    "name": "广汽本田(毕节4S店)",
+    "code": "DGZ006S002",
+    "short": "广汽本田德恒店毕节分店"
+  },
+  {
+    "file": "7594671393866795043_广汽本田永联店_台卡_7655161417590506303.png",
+    "name": "广汽本田永联店",
+    "code": "DSD067",
+    "short": "枣庄永联店"
+  },
+  {
+    "file": "7599540200607320100_广汽综合销售服务中心(博罗店)_台卡_7655161417590489919.png",
+    "name": "广汽综合销售服务中心(博罗店)",
+    "code": "DGD080S002",
+    "short": "广汽本田长荣店博罗分店"
+  },
+  {
+    "file": "7599586607280179236_广汽本田三和店_台卡_7655161417590473535.png",
+    "name": "广汽本田三和店",
+    "code": "DSC001",
+    "short": "成都三和店"
+  },
+  {
+    "file": "7605099966947657754_广汽本田(恒吉店)_台卡_7655161417590440767.png",
+    "name": "广汽本田(恒吉店)",
+    "code": "DSD004",
+    "short": "淄博恒吉店"
+  },
+  {
+    "file": "7616795507981027380_广汽本田(锦州和鑫店)_台卡_7655161417590424383.png",
+    "name": "广汽本田(锦州和鑫店)",
+    "code": "DLN019S003",
+    "short": "广汽本田和鑫店锦州分店"
+  },
+  {
+    "file": "7627618178796881926_广汽本田(鼎泓嘉成4S店)_台卡_7655161417590407999.png",
+    "name": "广汽本田(鼎泓嘉成4S店)",
+    "code": "DJL023",
+    "short": "吉林鼎泓嘉成店"
+  },
+  {
+    "file": "7630334496953927680_广汽本田(鼎泓成邦店)_台卡_7655161417590391615.png",
+    "name": "广汽本田(鼎泓成邦店)",
+    "code": "DJL022",
+    "short": "长春鼎泓成邦店"
+  },
+  {
+    "file": "7650842776178804782_广汽本田莲穗店_台卡_7655161417590375231.png",
+    "name": "广汽本田莲穗店",
+    "code": "DHEN47",
+    "short": "许昌莲穗店"
+  },
+  {
+    "file": "6601151430071961613_广汽本田金禧店_台卡_7655161417615901476.png",
+    "name": "广汽本田金禧店",
+    "code": "DSD069",
+    "short": "淄博金禧店"
+  },
+  {
+    "file": "6740891584084150285_广汽本田长琛店_台卡_7655161417599599401.png",
+    "name": "广汽本田长琛店",
+    "code": "DHLJ23",
+    "short": "哈尔滨长琛店"
+  },
+  {
+    "file": "custom_1784206566113_广汽本田森柏鼎晟店.png",
+    "name": "广汽本田森柏鼎晟店",
+    "code": "DHEB41",
+    "short": "唐山森柏鼎晟店",
+    "custom": true
+  },
+  {
+    "file": "custom_1784208500170_广汽本田亦庄店.png",
+    "name": "广汽本田亦庄店",
+    "code": "DBJ009",
+    "short": "北京亦庄店",
+    "custom": true
+  },
+  {
+    "file": "custom_1784276154851_广汽本田_华菱北站店_.png",
+    "name": "广汽本田(华菱北站店)",
+    "code": "DLN024",
+    "short": "大连华菱北站店",
+    "custom": true
+  },
+  {
+    "name": "广汽本田(广通店)",
+    "code": "DJL015",
+    "short": "通化广通店",
+    "file": "custom_1784255600000_广汽本田(广通店).png"
+  },
+  {
+    "name": "广汽本田昆智星店",
+    "code": "DHEB42",
+    "short": "保定昆智星店",
+    "file": "custom_1784255600001_广汽本田昆智星店.png"
+  },
+  {
+    "name": "广汽本田雨骏店",
+    "code": "DAH009",
+    "short": "马鞍山雨骏店",
+    "file": "custom_1784255600002_广汽本田雨骏店.png"
+  },
+  {
+    "name": "广汽本田骏通店",
+    "code": "DSXW14",
+    "short": "汉中骏通店",
+    "file": "custom_1784255600003_广汽本田骏通店.png"
+  },
+  {
+    "name": "广汽本田(奉贤店)",
+    "code": "DSH013",
+    "short": "上海奉贤店",
+    "file": "custom_1784255600004_广汽本田(奉贤店).png"
+  },
+  {
+    "file": "7667057901264962304_广汽本田盛达店_台卡.png",
+    "name": "广汽本田盛达店",
+    "code": "DJL024",
+    "short": "白城盛达店"
+  },
+  {
+    "file": "7673425667966698255_广汽本田鑫皓盛源店_台卡.png",
+    "name": "广汽本田鑫皓盛源店",
+    "code": "DSD070",
+    "short": "滨州广鑫店"
+  },
+  {
+    "file": "7673807029898576676_广汽本田银川鲲鹏店_台卡.png",
+    "name": "广汽本田银川鲲鹏店",
+    "code": "DNX006",
+    "short": "银川鲲鹏店"
+  },
+  {
+    "file": "7675598330785301294_广汽本田(吉至店)_台卡.png",
+    "name": "广汽本田(吉至店)",
+    "code": "DYN022",
+    "short": "昆明吉至店"
+  },
+  {
+    "file": "7686823570617484072_广汽本田广梧店_台卡.png",
+    "name": "广汽本田广梧店",
+    "code": "DGX010",
+    "short": "梧州广梧店"
+  },
+  {
+    "file": "7686823570617467688_广汽本田芳村店_台卡.png",
+    "name": "广汽本田芳村店",
+    "code": "DGD026",
+    "short": "广州芳村店"
+  },
+  {
+    "file": "7686823570617434920_广汽本田长沧店_台卡.png",
+    "name": "广汽本田长沧店",
+    "code": "DHEB40",
+    "short": "沧州长沧店"
+  },
+  {
+    "file": "7686823570617402152_广汽本田长鼎(西安店)_台卡.png",
+    "name": "广汽本田长鼎(西安店)",
+    "code": "DSXW19",
+    "short": "西安长鼎店"
+  },
+  {
+    "file": "7686823570617500456_广汽本田(六安智新店)_台卡.png",
+    "name": "广汽本田(六安智新店)",
+    "code": "DAH005S006",
+    "short": "广汽本田中源店六安分店"
+  },
+  {
+    "file": "7686823570617451304_广汽本田(鸿乾运店)_台卡.png",
+    "name": "广汽本田(鸿乾运店)",
+    "code": "DSD010S003",
+    "short": "广汽本田鸿基店邹城分店"
+  },
+  {
+    "file": "7686823570617533224_广汽本田顺吉店_台卡.png",
+    "name": "广汽本田顺吉店",
+    "code": "DSD026S001",
+    "short": "广汽本田泰合店东营分店"
+  },
+  {
+    "file": "7686824046830617394_广汽本田恒信德龙店_台卡.png",
+    "name": "广汽本田恒信德龙店",
+    "code": "DHUB19S001",
+    "short": "广汽本田恒信致远店咸宁分店"
+  },
+  {
+    "file": "7686823570617516840_广汽本田雨骏店_台卡.png",
+    "name": "广汽本田雨骏店",
+    "code": "DJS001S003",
+    "short": "广汽本田雨田店马鞍山分店"
+  },
+  {
+    "file": "DSD021S006_广汽本田骏业店罗庄分店_台卡.png",
+    "name": "广汽本田骏业店罗庄分店",
+    "code": "DSD021S006",
+    "short": "广汽本田骏业店罗庄分店"
+  },
+  {
+    "file": "DSD058S001_广汽本田(龙口顺合店)_台卡.png",
+    "name": "广汽本田(龙口顺合店)",
+    "code": "DSD058S001",
+    "short": "广汽本田顺合店龙口分店"
+  },
+  {
+    "file": "DZJ041S001_广汽集团综合销售服务中心_台卡.png",
+    "name": "广汽集团综合销售服务中心",
+    "code": "DZJ041S001",
+    "short": "广汽本田红翔店乐清分店"
+  },
+  {
+    "file": "DHEN46S001_广汽本田(骏远店)_台卡.png",
+    "name": "广汽本田(骏远店)",
+    "code": "DHEN46S001",
+    "short": "广汽本田北环店新郑分店"
+  },
+  {
+    "file": "7687102510963622666_广汽本田湛江店_台卡.png",
+    "name": "广汽本田湛江店",
+    "code": "DGD009",
+    "short": "湛江骏铠店"
+  }
+];
+let deletedBuiltinIds = []; // deleted built-in store file names (loaded from API when local)
+let isLoggedIn = false;
+let pendingFile = null;
+let batchMode = false;
+let selectedIds = new Set();
+
+// ===== Merge into display list =====
+function getAllStores() {
+  var deletedSet = new Set(deletedBuiltinIds);
+  // All stores (including custom) are in data.json; filter out deleted builtin
+  return stores.filter(function(s) {
+    if (s.custom) return true;
+    return !deletedSet.has(s.file);
+  });
+}
+
+// ===== Init =====
+function init() {
+  isLoggedIn = sessionStorage.getItem('qr_logged_in') === '1';
+  updateLoginUI();
+
+  if (isLocal) {
+    // Load deleted list from server
+    fetch('/api/deleted')
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        deletedBuiltinIds = (data.deleted || []).map(function(d) { return d.file; });
+        updateDeletedBanner();
+        refreshGrid();
+      })
+      .catch(function(err) {
+        console.error('Failed to load deleted list:', err);
+        refreshGrid();
+      });
+  } else {
+    // Online: data.json is pre-filtered, no deleted items
+    refreshGrid();
+  }
+}
+
+function refreshGrid() {
+  var all = getAllStores();
+  document.getElementById('total').textContent = all.length;
+  // Re-apply current search
+  var q = document.getElementById('search').value.trim().toLowerCase();
+  var filtered = q ? all.filter(function(s) {
+    return (s.name || '').toLowerCase().includes(q)
+        || (s.code || '').toLowerCase().includes(q)
+        || (s.short || '').toLowerCase().includes(q);
+  }) : all;
+  renderGrid(filtered);
+}
+
+// ===== Login =====
+function openLogin() {
+  document.getElementById('loginUser').value = '';
+  document.getElementById('loginPass').value = '';
+  document.getElementById('loginError').style.display = 'none';
+  document.getElementById('loginModal').classList.add('active');
+  setTimeout(function() { document.getElementById('loginUser').focus(); }, 100);
+}
+
+function closeLogin() {
+  document.getElementById('loginModal').classList.remove('active');
+}
+
+function doLogin() {
+  var user = document.getElementById('loginUser').value.trim();
+  var pass = document.getElementById('loginPass').value.trim();
+  if (user === '\u535a\u4e4b\u6797' && pass === 'bozhilin123') {
+    isLoggedIn = true;
+    sessionStorage.setItem('qr_logged_in', '1');
+    closeLogin();
+    updateLoginUI();
+    refreshGrid();
+  } else {
+    document.getElementById('loginError').style.display = 'block';
+  }
+}
+
+function doLogout() {
+  isLoggedIn = false;
+  batchMode = false;
+  selectedIds.clear();
+  sessionStorage.removeItem('qr_logged_in');
+  document.getElementById('batchBar').classList.remove('active');
+  updateLoginUI();
+  refreshGrid();
+}
+
+function updateLoginUI() {
+  var container = document.getElementById('headerRight');
+  if (isLoggedIn) {
+    container.innerHTML =
+      '<button class="btn btn-batch" id="batchBtn" onclick="toggleBatchMode()">批量管理</button>' +
+      '<button class="btn btn-add" onclick="openAdd()">+ 添加门店码</button>' +
+      '<button class="btn btn-logout" onclick="doLogout()">退出</button>';
+  } else {
+    container.innerHTML = '<button class="btn btn-login" onclick="openLogin()">管理登录</button>';
+  }
+}
+
+// ===== Add Store =====
+function openAdd() {
+  pendingFile = null;
+  document.getElementById('addName').value = '';
+  document.getElementById('addCode').value = '';
+  document.getElementById('addShort').value = '';
+  document.getElementById('uploadPreview').style.display = 'none';
+  document.getElementById('addError').style.display = 'none';
+  document.getElementById('addModal').classList.add('active');
+}
+
+function closeAdd() {
+  document.getElementById('addModal').classList.remove('active');
+  pendingFile = null;
+}
+
+function handleFile(file) {
+  if (!file) return;
+  if (!file.type.match(/image\/(png|jpeg|jpg)/)) {
+    showAddError('请上传 PNG 或 JPG 格式的图片');
+    return;
+  }
+  pendingFile = file;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    document.getElementById('previewImg').src = e.target.result;
+    document.getElementById('previewLabel').textContent = file.name + ' (' + (file.size / 1024).toFixed(0) + 'KB)';
+    document.getElementById('uploadPreview').style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+}
+
+function showAddError(msg) {
+  var el = document.getElementById('addError');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+function saveStore() {
+  var name = document.getElementById('addName').value.trim();
+  var code = document.getElementById('addCode').value.trim();
+  var short = document.getElementById('addShort').value.trim();
+
+  if (!name) { showAddError('请填写来客名称'); return; }
+  if (!pendingFile) { showAddError('请上传门店二维码图片'); return; }
+
+  if (!isLocal) { showAddError('请在本地管理端操作（http://localhost:8080）'); return; }
+
+  // Check duplicate name
+  var all = getAllStores();
+  for (var i = 0; i < all.length; i++) {
+    if (all[i].name === name) {
+      showAddError('该来客名称已存在，请勿重复添加');
+      return;
+    }
+  }
+
+  // Convert to base64 and send to API
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    fetch('/api/add-custom', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        name: name,
+        code: code,
+        short: short,
+        image: e.target.result
+      })
+    }).then(function(r) { return r.json(); })
+      .then(function(d) {
+        if (d.ok) {
+          closeAdd();
+          window.location.reload();
+        } else {
+          showAddError(d.error || '保存失败');
+        }
+      })
+      .catch(function() {
+        showAddError('保存失败，请确保本地管理服务器已启动');
+      });
+  };
+  reader.onerror = function() {
+    showAddError('图片读取失败，请重试');
+  };
+  reader.readAsDataURL(pendingFile);
+}
+
+// ===== Delete Store (single) =====
+function deleteStore(id, name, isCustom, file) {
+  if (!confirm('确认删除「' + name + '」？此操作不可撤销。')) return;
+
+  if (!isLocal) {
+    alert('请在本地管理端操作\n地址: http://localhost:8080');
+    return;
+  }
+
+  var api = isCustom ? '/api/delete-custom' : '/api/delete-builtin';
+  fetch(api, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({file: file})
+  }).then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (d.ok) window.location.reload();
+      else alert(d.error || '删除失败');
+    })
+    .catch(function(err) {
+      alert('删除失败，请确保本地管理服务器已启动');
+      console.error(err);
+    });
+}
+
+// ===== Batch Mode =====
+function toggleBatchMode() {
+  batchMode = !batchMode;
+  var btn = document.getElementById('batchBtn');
+  if (batchMode) {
+    btn.classList.add('active');
+    btn.textContent = '退出批量';
+    selectedIds.clear();
+    document.getElementById('batchBar').classList.add('active');
+  } else {
+    exitBatchMode();
+  }
+  refreshGrid();
+}
+
+function exitBatchMode() {
+  batchMode = false;
+  selectedIds.clear();
+  var btn = document.getElementById('batchBtn');
+  if (btn) { btn.classList.remove('active'); btn.textContent = '批量管理'; }
+  document.getElementById('batchBar').classList.remove('active');
+  updateSelCount();
+  refreshGrid();
+}
+
+function toggleSelect(id) {
+  if (selectedIds.has(id)) {
+    selectedIds.delete(id);
+  } else {
+    selectedIds.add(id);
+  }
+  updateSelCount();
+  // Update card visual
+  var card = document.querySelector('[data-store-id="' + cssEscape(id) + '"]');
+  if (card) {
+    card.classList.toggle('batch-selected', selectedIds.has(id));
+    var cb = card.querySelector('.card-checkbox');
+    if (cb) cb.checked = selectedIds.has(id);
+  }
+}
+
+function selectCard(id) {
+  toggleSelect(id);
+}
+
+function updateSelCount() {
+  document.getElementById('selCount').textContent = selectedIds.size;
+}
+
+function batchDelete() {
+  if (selectedIds.size === 0) { alert('请先选择要删除的门店'); return; }
+  if (!isLocal) { alert('请在本地管理端操作\n地址: http://localhost:8080'); return; }
+  if (!confirm('确认删除选中的 ' + selectedIds.size + ' 家门店？此操作不可撤销。')) return;
+
+  var ids = Array.from(selectedIds);
+  var promises = ids.map(function(file) {
+    return fetch('/api/delete-builtin', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({file: file})
+    }).then(function(r) { return r.json(); });
+  });
+
+  Promise.all(promises).then(function() {
+    exitBatchMode();
+    window.location.reload();
+  }).catch(function(err) {
+    alert('部分删除失败，请重试');
+    console.error(err);
+    exitBatchMode();
+  });
+}
+
+// ===== Restore deleted built-in stores =====
+function restoreAll() {
+  if (!isLocal) { alert('请在本地管理端操作\n地址: http://localhost:8080'); return; }
+  if (!confirm('确认恢复全部已删除的内置门店？')) return;
+  fetch('/api/restore-all', {method: 'POST'})
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (d.ok) window.location.reload();
+      else alert(d.error || '恢复失败');
+    })
+    .catch(function(err) {
+      alert('恢复失败，请确保本地管理服务器已启动');
+      console.error(err);
+    });
+}
+
+function updateDeletedBanner() {
+  var banner = document.getElementById('deletedBanner');
+  var info = document.getElementById('deletedInfo');
+  if (deletedBuiltinIds.length > 0) {
+    info.textContent = '已删除 ' + deletedBuiltinIds.length + ' 家内置门店';
+    banner.classList.add('active');
+  } else {
+    banner.classList.remove('active');
+  }
+}
+
+// ===== Edit Store =====
+var editingFile = '';
+
+function openEdit(s) {
+  editingFile = s.file;
+  document.getElementById('editStoreName').textContent = s.name || '';
+  document.getElementById('editCode').value = s.code || '';
+  document.getElementById('editShort').value = s.short || '';
+  document.getElementById('editError').style.display = 'none';
+  document.getElementById('editModal').classList.add('active');
+}
+
+function closeEdit() {
+  document.getElementById('editModal').classList.remove('active');
+  editingFile = '';
+}
+
+function doEdit() {
+  var code = document.getElementById('editCode').value.trim();
+  var short = document.getElementById('editShort').value.trim();
+
+  fetch('/api/update-store', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({file: editingFile, code: code, short: short})
+  }).then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (d.ok) {
+        closeEdit();
+        window.location.reload();
+      } else {
+        document.getElementById('editError').textContent = d.error || '保存失败';
+        document.getElementById('editError').style.display = 'block';
+      }
+    })
+    .catch(function() {
+      document.getElementById('editError').textContent = '保存失败，请确保本地管理服务器已启动';
+      document.getElementById('editError').style.display = 'block';
+    });
+}
+
+function cssEscape(s) {
+  return (s || '').replace(/"/g, '\\"').replace(/'/g, "\\'");
+}
+
+// ===== Drag & Drop =====
+var uploadArea = document.getElementById('uploadArea');
+uploadArea.addEventListener('dragover', function(e) {
+  e.preventDefault();
+  this.classList.add('dragover');
+});
+uploadArea.addEventListener('dragleave', function(e) {
+  this.classList.remove('dragover');
+});
+uploadArea.addEventListener('drop', function(e) {
+  e.preventDefault();
+  this.classList.remove('dragover');
+  if (e.dataTransfer.files.length > 0) {
+    handleFile(e.dataTransfer.files[0]);
+  }
+});
+
+// ===== Render =====
+document.getElementById('search').addEventListener('input', function(e) {
+  var q = e.target.value.trim().toLowerCase();
+  var all = getAllStores();
+  var filtered = q ? all.filter(function(s) {
+    return (s.name || '').toLowerCase().includes(q)
+        || (s.code || '').toLowerCase().includes(q)
+        || (s.short || '').toLowerCase().includes(q);
+  }) : all;
+  renderGrid(filtered);
+});
+
+function renderGrid(list) {
+  var grid = document.getElementById('grid');
+  var empty = document.getElementById('empty');
+  if (list.length === 0) { grid.innerHTML = ''; empty.style.display = 'block'; return; }
+  empty.style.display = 'none';
+  grid.innerHTML = list.map(function(s, idx) {
+    var name = esc(s.name);
+    var code = s.code || '';
+    var short = s.short || '';
+    var isCustom = s.custom === true;
+    var imgSrc = 'images/' + s.file;
+    var storeId = s.file;
+    var metaHtml = '';
+    if (code) metaHtml += '<span class="tag tag-code">' + esc(code) + '</span>';
+    if (short) metaHtml += '<span class="tag tag-short">' + esc(short) + '</span>';
+    var deleteBtn = (isLoggedIn && isLocal)
+      ? '<button class="btn btn-delete" data-del-idx="' + idx + '">删除</button>'
+      : '';
+    var editBtn = (isLoggedIn && isLocal)
+      ? '<button class="btn btn-edit" data-edit-idx="' + idx + '">编辑</button>'
+      : '';
+    var checkboxHtml = (isLoggedIn && batchMode)
+      ? '<input type="checkbox" class="card-checkbox" data-sel-id="' + esc(storeId) + '" ' + (selectedIds.has(storeId) ? 'checked' : '') + '>'
+      : '';
+    var batchClasses = (isLoggedIn && batchMode) ? ' batch-mode' : '';
+    if (batchMode && selectedIds.has(storeId)) batchClasses += ' batch-selected';
+    var previewBtn = (isLoggedIn && batchMode)
+      ? ''
+      : '<button class="btn btn-preview" data-prev-idx="' + idx + '">预览</button>';
+    var downloadBtn = (isLoggedIn && batchMode)
+      ? ''
+      : '<a class="btn btn-download" href="' + esc(imgSrc) + '" download="' + esc(short || s.name) + '.png">下载</a>';
+    return '<div class="card' + (isCustom ? ' custom' : '') + batchClasses + '" data-store-id="' + esc(storeId) + '" data-idx="' + idx + '">'
+      + checkboxHtml
+      + '<span class="card-badge">自定义</span>'
+      + '<div class="card-img" data-prev-idx="' + idx + '">'
+      + '<img src="' + esc(imgSrc) + '" alt="' + name + '" loading="lazy">'
+      + '</div>'
+      + '<div class="card-body">'
+      + '<div class="card-name">' + name + '</div>'
+      + '<div class="card-meta">' + metaHtml + '</div>'
+      + '<div class="card-actions">'
+      + previewBtn
+      + downloadBtn
+      + editBtn
+      + deleteBtn
+      + '</div></div></div>';
+  }).join('');
+
+  // Store current list for event handlers
+  currentList = list;
+
+  // Bind event listeners
+  bindCardEvents();
+}
+
+var currentList = [];
+
+function bindCardEvents() {
+  var grid = document.getElementById('grid');
+
+  // Delete buttons
+  grid.querySelectorAll('[data-del-idx]').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      var idx = parseInt(this.getAttribute('data-del-idx'));
+      var s = currentList[idx];
+      if (!s) return;
+      var isCustom = s.custom === true;
+      var name = s.name || '';
+      var file = s.file || '';
+      deleteStore(file, name, isCustom, file);
+    });
+  });
+
+  // Edit buttons
+  grid.querySelectorAll('[data-edit-idx]').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      var idx = parseInt(this.getAttribute('data-edit-idx'));
+      var s = currentList[idx];
+      if (!s) return;
+      openEdit(s);
+    });
+  });
+
+  // Preview buttons and image clicks
+  grid.querySelectorAll('[data-prev-idx]').forEach(function(el) {
+    el.addEventListener('click', function(e) {
+      if (isLoggedIn && batchMode) {
+        // In batch mode, select card instead
+        var idx = parseInt(this.getAttribute('data-prev-idx'));
+        var s = currentList[idx];
+        if (s) {
+          var storeId = s.file;
+          toggleSelect(storeId);
+        }
+        return;
+      }
+      var idx = parseInt(this.getAttribute('data-prev-idx'));
+      var s = currentList[idx];
+      if (!s) return;
+      openModalDirect(s);
+    });
+  });
+
+  // Checkboxes
+  grid.querySelectorAll('.card-checkbox').forEach(function(cb) {
+    cb.addEventListener('click', function(e) {
+      e.stopPropagation();
+      var storeId = this.getAttribute('data-sel-id');
+      toggleSelect(storeId);
+    });
+  });
+
+  // Card click in batch mode
+  if (isLoggedIn && batchMode) {
+    grid.querySelectorAll('.card[data-store-id]').forEach(function(card) {
+      card.addEventListener('click', function(e) {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'BUTTON') return;
+        var storeId = this.getAttribute('data-store-id');
+        toggleSelect(storeId);
+      });
+    });
+  }
+}
+
+function openModalDirect(s) {
+  var name = s.name || '';
+  var code = s.code || '';
+  var short = s.short || '';
+  var imgSrc = 'images/' + s.file;
+  document.getElementById('modalName').textContent = name;
+  var meta = [];
+  if (code) meta.push('店代码: ' + code);
+  if (short) meta.push('店简称: ' + short);
+  document.getElementById('modalMeta').textContent = meta.join('  |  ');
+  document.getElementById('modalImg').src = imgSrc;
+  var a = document.getElementById('modalDownload');
+  a.href = imgSrc;
+  a.download = (short || name) + '.png';
+  document.getElementById('modal').classList.add('active');
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('active');
+}
+document.getElementById('modal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    closeModal();
+    closeLogin();
+    closeAdd();
+    closeEdit();
+  }
+  if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+    e.preventDefault(); document.getElementById('search').focus();
+  }
+});
+
+// Enter key to login
+document.getElementById('loginPass').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') doLogin();
+});
+document.getElementById('loginUser').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') document.getElementById('loginPass').focus();
+});
+
+function esc(s) {
+  return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+// Start
+init();
+</script>
+</body>
+</html>
