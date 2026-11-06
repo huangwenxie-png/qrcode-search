@@ -79,6 +79,11 @@
     display: block; transition: transform 0.2s;
   }
   .card-img:hover img { transform: scale(1.05); }
+  .card-img.has-staff { gap: 6px; padding: 10px; }
+  .card-img .qr-slot { display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1; min-width: 0; }
+  .card-img.has-staff img { max-width: 92px; max-height: 110px; }
+  .staff-tag { font-size: 11px; color: #c8102e; background: #fff0f0; border: 1px solid #f3c0c0; border-radius: 4px; padding: 1px 6px; white-space: nowrap; }
+  .modal-staff-label { font-size: 13px; color: #c8102e; margin: 4px 0 0; font-weight: 600; }
   .card-body { padding: 12px 16px 16px; flex: 1; display: flex; flex-direction: column; gap: 8px; }
   .card-name { font-size: 14px; font-weight: 600; color: #333; line-height: 1.4; }
   .card-meta { display: flex; gap: 8px; flex-wrap: wrap; }
@@ -273,8 +278,13 @@
     <div class="modal-name" id="modalName"></div>
     <div class="modal-meta" id="modalMeta"></div>
     <img id="modalImg" src="" alt="">
+    <div id="modalStaffWrap" style="display:none;">
+      <div class="modal-staff-label">职人码</div>
+      <img id="modalStaffImg" src="" alt="">
+      <div><a class="btn btn-download" id="modalStaffDownload" href="#" download>下载职人码</a></div>
+    </div>
     <div>
-      <a class="btn btn-download" id="modalDownload" href="#" download>下载二维码</a>
+      <a class="btn btn-download" id="modalDownload" href="#" download>下载门店码</a>
     </div>
   </div>
 </div>
@@ -462,7 +472,8 @@ let stores = [
     "file": "6601138133880801294_广汽本田东圃店_台卡_7655161417621078827.png",
     "name": "广汽本田东圃店",
     "code": "DGD119",
-    "short": "广州东圃店"
+    "short": "广州东圃店",
+    "staff": "DGD119_广汽本田东圃店_职人码.png"
   },
   {
     "file": "6601138262868232196_广汽本田九城店_台卡_7655161417621062443.png",
@@ -486,7 +497,8 @@ let stores = [
     "file": "6601138944895617031_广汽本田欣雅特店_台卡_7655161417621013291.png",
     "name": "广汽本田欣雅特店",
     "code": "DSXE18",
-    "short": "长治欣雅特店"
+    "short": "长治欣雅特店",
+    "staff": "DSXE18_广汽本田欣雅特店_职人码.png"
   },
   {
     "file": "6601139090161158152_广汽本田恒信店_台卡_7655161417620980523.png",
@@ -618,7 +630,8 @@ let stores = [
     "file": "6601141282909734915_广汽本田(友芝友店)_台卡_7655161417617277732.png",
     "name": "广汽本田(友芝友店)",
     "code": "DHUB02",
-    "short": "武汉友芝友店"
+    "short": "武汉友芝友店",
+    "staff": "DHUB02_广汽本田(友芝友店)_职人码.png"
   },
   {
     "file": "6601141351167821828_广汽本田(车友店)_台卡_7655161417617261348.png",
@@ -678,7 +691,8 @@ let stores = [
     "file": "6601141980745435144_广汽本田黄河店_台卡_7655161417617048356.png",
     "name": "广汽本田黄河店",
     "code": "DSXE16",
-    "short": "太原黄河店"
+    "short": "太原黄河店",
+    "staff": "DSXE16_广汽本田黄河店_职人码.png"
   },
   {
     "file": "6601142068737755143_广汽本田金美店_台卡_7655161417617031972.png",
@@ -810,7 +824,8 @@ let stores = [
     "file": "6601144121690163214_广汽本田和骏店_台卡_7655161417616605988.png",
     "name": "广汽本田和骏店",
     "code": "DGZ003",
-    "short": "遵义和骏店"
+    "short": "遵义和骏店",
+    "staff": "DGZ003_广汽本田和骏店_职人码.png"
   },
   {
     "file": "6601144137548843011_广汽本田华兴店_台卡_7655161417616589604.png",
@@ -1014,7 +1029,8 @@ let stores = [
     "file": "6601151011832743944_广汽本田盈峰店_台卡_7655161417615917860.png",
     "name": "广汽本田盈峰店",
     "code": "DGD114",
-    "short": "惠州盈峰店"
+    "short": "惠州盈峰店",
+    "staff": "DGD114_广汽本田盈峰店_职人码.png"
   },
   {
     "file": "6601151769126897677_广汽本田九通店分店_台卡_7655161417615885092.png",
@@ -1260,7 +1276,8 @@ let stores = [
     "file": "6601207698430101512_广汽本田金旺店_台卡_7655161417607971627.png",
     "name": "广汽本田金旺店",
     "code": "DSD034",
-    "short": "青州金旺店"
+    "short": "青州金旺店",
+    "staff": "DSD034_广汽本田金旺店_职人码.png"
   },
   {
     "file": "6601207818487859213_广汽本田(包河店)_台卡_7655161417607955243.png",
@@ -1302,7 +1319,8 @@ let stores = [
     "file": "6601220535974103043_广汽本田瑞尚店_台卡_7655161417607856939.png",
     "name": "广汽本田瑞尚店",
     "code": "DHEN31",
-    "short": "周口瑞尚店"
+    "short": "周口瑞尚店",
+    "staff": "DHEN31_广汽本田瑞尚店_职人码.png"
   },
   {
     "file": "6601227527325222915_广汽本田(吉田店东台分店)_台卡_7655161417607840555.png",
@@ -1716,7 +1734,8 @@ let stores = [
     "file": "6726027021450872835_广汽本田骏鑫店_台卡_7655161417599714089.png",
     "name": "广汽本田骏鑫店",
     "code": "DJS052",
-    "short": "徐州骏鑫店"
+    "short": "徐州骏鑫店",
+    "staff": "DJS052_广汽本田骏鑫店_职人码.png"
   },
   {
     "file": "6727845446271682568_广汽本田致通竣程店_台卡_7655161417599697705.png",
@@ -1902,7 +1921,8 @@ let stores = [
     "file": "6887935624964212747_广汽本田九通店_台卡_7655161417599009577.png",
     "name": "广汽本田九通店",
     "code": "DHEN45",
-    "short": "郑州九通店"
+    "short": "郑州九通店",
+    "staff": "DHEN45_广汽本田九通店_职人码.png"
   },
   {
     "file": "6888589154741929984_广汽本田(郴州汇田店)_台卡_7655161417598993193.png",
@@ -1938,7 +1958,8 @@ let stores = [
     "file": "6893996579745695758_广汽本田信阳宏硕店_台卡_7655161417598911273.png",
     "name": "广汽本田信阳宏硕店",
     "code": "DHEN40",
-    "short": "信阳宏硕店"
+    "short": "信阳宏硕店",
+    "staff": "DHEN40_广汽本田信阳宏硕店_职人码.png"
   },
   {
     "file": "6899931606857811968_广汽本田东港店高平分店_台卡_7655161417598878505.png",
@@ -2418,7 +2439,8 @@ let stores = [
     "file": "7630334496953927680_广汽本田(鼎泓成邦店)_台卡_7655161417590391615.png",
     "name": "广汽本田(鼎泓成邦店)",
     "code": "DJL022",
-    "short": "长春鼎泓成邦店"
+    "short": "长春鼎泓成邦店",
+    "staff": "DJL022_广汽本田(鼎泓成邦店)_职人码.png"
   },
   {
     "file": "7650842776178804782_广汽本田莲穗店_台卡_7655161417590375231.png",
@@ -3394,8 +3416,11 @@ function renderGrid(list) {
     return '<div class="card' + (isCustom ? ' custom' : '') + batchClasses + '" data-store-id="' + esc(storeId) + '" data-idx="' + idx + '">'
       + checkboxHtml
       + '<span class="card-badge">自定义</span>'
-      + '<div class="card-img" data-prev-idx="' + idx + '">'
-      + '<img src="' + esc(imgSrc) + '" alt="' + name + '" loading="lazy">'
+      + '<div class="card-img' + (s.staff ? ' has-staff' : '') + '" data-prev-idx="' + idx + '">'
+      + (s.staff
+          ? '<div class="qr-slot"><img src="' + esc(imgSrc) + '" alt="' + name + '" loading="lazy"></div>'
+            + '<div class="qr-slot"><span class="staff-tag">职人码</span><img src="images/' + esc(s.staff) + '" alt="' + name + '职人码" loading="lazy"></div>'
+          : '<img src="' + esc(imgSrc) + '" alt="' + name + '" loading="lazy">')
       + '</div>'
       + '<div class="card-body">'
       + '<div class="card-name">' + name + '</div>'
@@ -3500,6 +3525,17 @@ function openModalDirect(s) {
   var a = document.getElementById('modalDownload');
   a.href = imgSrc;
   a.download = (short || name) + '.png';
+  var staffWrap = document.getElementById('modalStaffWrap');
+  if (s.staff) {
+    var staffSrc = 'images/' + s.staff;
+    staffWrap.style.display = 'block';
+    document.getElementById('modalStaffImg').src = staffSrc;
+    var sa = document.getElementById('modalStaffDownload');
+    sa.href = staffSrc;
+    sa.download = (short || name) + '_职人码.png';
+  } else {
+    staffWrap.style.display = 'none';
+  }
   document.getElementById('modal').classList.add('active');
 }
 
