@@ -82,12 +82,10 @@
   .card-img.has-staff { gap: 6px; padding: 10px; }
   .card-img .qr-slot { display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1; min-width: 0; }
   .card-img.has-staff img { max-width: 92px; max-height: 110px; }
-  .staff-tag { font-size: 11px; color: #c8102e; background: #fff0f0; border: 1px solid #f3c0c0; border-radius: 4px; padding: 1px 6px; white-space: nowrap; }
   .modal-staff-label { font-size: 13px; color: #c8102e; margin: 4px 0 0; font-weight: 600; }
-  /* 职人码视觉区分：粉色底 + 红边框 */
-  .card-img .qr-slot.staff-slot { background: #fff0f0; border: 1px solid #f3c0c0; border-radius: 8px; padding: 8px 6px; }
-  .card-img .qr-slot.staff-slot .staff-tag { margin-bottom: 2px; }
   .card-meta .tag-staff-note { color: #c8102e; background: #fff0f0; border: 1px solid #f3c0c0; border-radius: 4px; padding: 1px 6px; font-size: 11px; margin-left: 4px; }
+  /* 职人码独立卡片：粉色底 + 红边框，与白色门店码卡区分 */
+  .card.staff-card { background: #fff8f8; border: 1px solid #f3c0c0; }
   #modalStaffWrap { background: #fff0f0; border: 1px solid #f3c0c0; border-radius: 8px; padding: 10px; margin-top: 6px; }
   .card-body { padding: 12px 16px 16px; flex: 1; display: flex; flex-direction: column; gap: 8px; }
   .card-name { font-size: 14px; font-weight: 600; color: #333; line-height: 1.4; }
@@ -3401,7 +3399,6 @@ function renderGrid(list) {
     var metaHtml = '';
     if (code) metaHtml += '<span class="tag tag-code">' + esc(code) + '</span>';
     if (short) metaHtml += '<span class="tag tag-short">' + esc(short) + '</span>';
-    if (s.staff) metaHtml += '<span class="tag tag-staff-note">职人码</span>';
     var deleteBtn = (isLoggedIn && isLocal)
       ? '<button class="btn btn-delete" data-del-idx="' + idx + '">删除</button>'
       : '';
@@ -3418,18 +3415,13 @@ function renderGrid(list) {
       : '<button class="btn btn-preview" data-prev-idx="' + idx + '">预览</button>';
     var downloadBtn = (isLoggedIn && batchMode)
       ? ''
-      : (s.staff
-          ? '<a class="btn btn-download" href="' + esc(imgSrc) + '" download="' + esc(short || s.name) + '_门店码.png">下载门店码</a>'
-            + '<a class="btn btn-download" href="images/' + esc(s.staff) + '" download="' + esc(short || s.name) + '_职人码.png">下载职人码</a>'
-          : '<a class="btn btn-download" href="' + esc(imgSrc) + '" download="' + esc(short || s.name) + '.png">下载</a>');
-    return '<div class="card' + (isCustom ? ' custom' : '') + batchClasses + '" data-store-id="' + esc(storeId) + '" data-idx="' + idx + '">'
+      : '<a class="btn btn-download" href="' + esc(imgSrc) + '" download="' + esc(short || s.name) + '.png">下载</a>';
+    // 门店码卡片（独立）
+    var storeCard = '<div class="card' + (isCustom ? ' custom' : '') + batchClasses + '" data-store-id="' + esc(storeId) + '" data-idx="' + idx + '">'
       + checkboxHtml
       + '<span class="card-badge">自定义</span>'
-      + '<div class="card-img' + (s.staff ? ' has-staff' : '') + '" data-prev-idx="' + idx + '">'
-      + (s.staff
-          ? '<div class="qr-slot"><img src="' + esc(imgSrc) + '" alt="' + name + '" loading="lazy"></div>'
-            + '<div class="qr-slot staff-slot"><span class="staff-tag">职人码</span><img src="images/' + esc(s.staff) + '" alt="' + name + '职人码" loading="lazy"></div>'
-          : '<img src="' + esc(imgSrc) + '" alt="' + name + '" loading="lazy">')
+      + '<div class="card-img" data-prev-idx="' + idx + '">'
+      + '<img src="' + esc(imgSrc) + '" alt="' + name + '" loading="lazy">'
       + '</div>'
       + '<div class="card-body">'
       + '<div class="card-name">' + name + '</div>'
@@ -3440,6 +3432,22 @@ function renderGrid(list) {
       + editBtn
       + deleteBtn
       + '</div></div></div>';
+    // 职人码卡片（独立出来，与门店码卡平级，各自一张）
+    var staffCard = '';
+    if (s.staff) {
+      var staffSrc = 'images/' + s.staff;
+      staffCard = '<div class="card staff-card' + batchClasses + '" data-store-id="' + esc(storeId) + '">'
+        + '<div class="card-img">'
+        + '<img src="' + esc(staffSrc) + '" alt="' + name + '职人码" loading="lazy">'
+        + '</div>'
+        + '<div class="card-body">'
+        + '<div class="card-name">' + name + ' <span class="tag tag-staff-note">职人码</span></div>'
+        + '<div class="card-meta">' + metaHtml + '</div>'
+        + '<div class="card-actions">'
+        + '<a class="btn btn-download" href="' + esc(staffSrc) + '" download="' + esc(short || s.name) + '_职人码.png">下载职人码</a>'
+        + '</div></div></div>';
+    }
+    return storeCard + staffCard;
   }).join('');
 
   // Store current list for event handlers
