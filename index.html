@@ -3412,7 +3412,10 @@ function renderGrid(list) {
       : '<button class="btn btn-preview" data-prev-idx="' + idx + '">预览</button>';
     var downloadBtn = (isLoggedIn && batchMode)
       ? ''
-      : '<a class="btn btn-download" href="' + esc(imgSrc) + '" download="' + esc(short || s.name) + '.png">下载</a>';
+      : (s.staff
+          ? '<a class="btn btn-download" href="' + esc(imgSrc) + '" download="' + esc(short || s.name) + '_门店码.png">下载门店码</a>'
+            + '<a class="btn btn-download" href="images/' + esc(s.staff) + '" download="' + esc(short || s.name) + '_职人码.png">下载职人码</a>'
+          : '<a class="btn btn-download" href="' + esc(imgSrc) + '" download="' + esc(short || s.name) + '.png">下载</a>');
     return '<div class="card' + (isCustom ? ' custom' : '') + batchClasses + '" data-store-id="' + esc(storeId) + '" data-idx="' + idx + '">'
       + checkboxHtml
       + '<span class="card-badge">自定义</span>'
