@@ -3412,7 +3412,7 @@ function renderGrid(list) {
     if (batchMode && selectedIds.has(storeId)) batchClasses += ' batch-selected';
     var previewBtn = (isLoggedIn && batchMode)
       ? ''
-      : '<button class="btn btn-preview" data-prev-idx="' + idx + '">预览</button>';
+      : '<button class="btn btn-preview" data-prev-idx="' + idx + '" data-prev-type="store">预览</button>';
     var downloadBtn = (isLoggedIn && batchMode)
       ? ''
       : '<a class="btn btn-download" href="' + esc(imgSrc) + '" download="' + esc(short || s.name) + '.png">下载</a>';
@@ -3420,7 +3420,7 @@ function renderGrid(list) {
     var storeCard = '<div class="card' + (isCustom ? ' custom' : '') + batchClasses + '" data-store-id="' + esc(storeId) + '" data-idx="' + idx + '">'
       + checkboxHtml
       + '<span class="card-badge">自定义</span>'
-      + '<div class="card-img" data-prev-idx="' + idx + '">'
+      + '<div class="card-img" data-prev-idx="' + idx + '" data-prev-type="store">'
       + '<img src="' + esc(imgSrc) + '" alt="' + name + '" loading="lazy">'
       + '</div>'
       + '<div class="card-body">'
@@ -3437,13 +3437,14 @@ function renderGrid(list) {
     if (s.staff) {
       var staffSrc = 'images/' + s.staff;
       staffCard = '<div class="card staff-card' + batchClasses + '" data-store-id="' + esc(storeId) + '">'
-        + '<div class="card-img">'
+        + '<div class="card-img" data-prev-idx="' + idx + '" data-prev-type="staff">'
         + '<img src="' + esc(staffSrc) + '" alt="' + name + '职人码" loading="lazy">'
         + '</div>'
         + '<div class="card-body">'
         + '<div class="card-name">' + name + ' <span class="tag tag-staff-note">职人码</span></div>'
         + '<div class="card-meta">' + metaHtml + '</div>'
         + '<div class="card-actions">'
+        + '<button class="btn btn-preview" data-prev-idx="' + idx + '" data-prev-type="staff">预览</button>'
         + '<a class="btn btn-download" href="' + esc(staffSrc) + '" download="' + esc(short || s.name) + '_职人码.png">下载职人码</a>'
         + '</div></div></div>';
     }
@@ -3490,20 +3491,16 @@ function bindCardEvents() {
   // Preview buttons and image clicks
   grid.querySelectorAll('[data-prev-idx]').forEach(function(el) {
     el.addEventListener('click', function(e) {
-      if (isLoggedIn && batchMode) {
-        // In batch mode, select card instead
-        var idx = parseInt(this.getAttribute('data-prev-idx'));
-        var s = currentList[idx];
-        if (s) {
-          var storeId = s.file;
-          toggleSelect(storeId);
-        }
-        return;
-      }
       var idx = parseInt(this.getAttribute('data-prev-idx'));
+      var prevType = this.getAttribute('data-prev-type') || 'store';
       var s = currentList[idx];
       if (!s) return;
-      openModalDirect(s);
+      if (isLoggedIn && batchMode) {
+        // In batch mode, select card instead
+        toggleSelect(s.file);
+        return;
+      }
+      openModalDirect(s, prevType);
     });
   });
 
@@ -3528,32 +3525,27 @@ function bindCardEvents() {
   }
 }
 
-function openModalDirect(s) {
+function openModalDirect(s, type) {
+  type = type || 'store';
+  var isStaff = (type === 'staff') && !!s.staff;
   var name = s.name || '';
   var code = s.code || '';
   var short = s.short || '';
-  var imgSrc = 'images/' + s.file;
-  document.getElementById('modalName').textContent = name;
+  // 只展示被点击的那一张码：点门店码看门店码，点职人码看职人码
+  var imgSrc = 'images/' + (isStaff ? s.staff : s.file);
+  document.getElementById('modalName').textContent = isStaff ? (name + '（职人码）') : name;
   var meta = [];
   if (code) meta.push('店代码: ' + code);
   if (short) meta.push('店简称: ' + short);
-  if (s.staff) meta.push('职人码');
+  if (isStaff) meta.push('职人码');
   document.getElementById('modalMeta').textContent = meta.join('  |  ');
   document.getElementById('modalImg').src = imgSrc;
   var a = document.getElementById('modalDownload');
   a.href = imgSrc;
-  a.download = (short || name) + '.png';
-  var staffWrap = document.getElementById('modalStaffWrap');
-  if (s.staff) {
-    var staffSrc = 'images/' + s.staff;
-    staffWrap.style.display = 'block';
-    document.getElementById('modalStaffImg').src = staffSrc;
-    var sa = document.getElementById('modalStaffDownload');
-    sa.href = staffSrc;
-    sa.download = (short || name) + '_职人码.png';
-  } else {
-    staffWrap.style.display = 'none';
-  }
+  a.download = (short || name) + (isStaff ? '_职人码.png' : '.png');
+  a.textContent = isStaff ? '下载职人码' : '下载门店码';
+  // 单一码展示，隐藏组合用的职人码区
+  document.getElementById('modalStaffWrap').style.display = 'none';
   document.getElementById('modal').classList.add('active');
 }
 
