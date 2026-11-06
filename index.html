@@ -84,6 +84,11 @@
   .card-img.has-staff img { max-width: 92px; max-height: 110px; }
   .staff-tag { font-size: 11px; color: #c8102e; background: #fff0f0; border: 1px solid #f3c0c0; border-radius: 4px; padding: 1px 6px; white-space: nowrap; }
   .modal-staff-label { font-size: 13px; color: #c8102e; margin: 4px 0 0; font-weight: 600; }
+  /* 职人码视觉区分：粉色底 + 红边框 */
+  .card-img .qr-slot.staff-slot { background: #fff0f0; border: 1px solid #f3c0c0; border-radius: 8px; padding: 8px 6px; }
+  .card-img .qr-slot.staff-slot .staff-tag { margin-bottom: 2px; }
+  .card-meta .tag-staff-note { color: #c8102e; background: #fff0f0; border: 1px solid #f3c0c0; border-radius: 4px; padding: 1px 6px; font-size: 11px; margin-left: 4px; }
+  #modalStaffWrap { background: #fff0f0; border: 1px solid #f3c0c0; border-radius: 8px; padding: 10px; margin-top: 6px; }
   .card-body { padding: 12px 16px 16px; flex: 1; display: flex; flex-direction: column; gap: 8px; }
   .card-name { font-size: 14px; font-weight: 600; color: #333; line-height: 1.4; }
   .card-meta { display: flex; gap: 8px; flex-wrap: wrap; }
@@ -3396,6 +3401,7 @@ function renderGrid(list) {
     var metaHtml = '';
     if (code) metaHtml += '<span class="tag tag-code">' + esc(code) + '</span>';
     if (short) metaHtml += '<span class="tag tag-short">' + esc(short) + '</span>';
+    if (s.staff) metaHtml += '<span class="tag tag-staff-note">职人码</span>';
     var deleteBtn = (isLoggedIn && isLocal)
       ? '<button class="btn btn-delete" data-del-idx="' + idx + '">删除</button>'
       : '';
@@ -3422,7 +3428,7 @@ function renderGrid(list) {
       + '<div class="card-img' + (s.staff ? ' has-staff' : '') + '" data-prev-idx="' + idx + '">'
       + (s.staff
           ? '<div class="qr-slot"><img src="' + esc(imgSrc) + '" alt="' + name + '" loading="lazy"></div>'
-            + '<div class="qr-slot"><span class="staff-tag">职人码</span><img src="images/' + esc(s.staff) + '" alt="' + name + '职人码" loading="lazy"></div>'
+            + '<div class="qr-slot staff-slot"><span class="staff-tag">职人码</span><img src="images/' + esc(s.staff) + '" alt="' + name + '职人码" loading="lazy"></div>'
           : '<img src="' + esc(imgSrc) + '" alt="' + name + '" loading="lazy">')
       + '</div>'
       + '<div class="card-body">'
@@ -3523,6 +3529,7 @@ function openModalDirect(s) {
   var meta = [];
   if (code) meta.push('店代码: ' + code);
   if (short) meta.push('店简称: ' + short);
+  if (s.staff) meta.push('职人码');
   document.getElementById('modalMeta').textContent = meta.join('  |  ');
   document.getElementById('modalImg').src = imgSrc;
   var a = document.getElementById('modalDownload');
